@@ -118,9 +118,18 @@ def edit_list(list_id):
 
     if form.validate_on_submit():
         list_obj.name = form.name.data
-        list_obj.category = form.category.data
+        # list_obj.category = form.category.data
         list_obj.is_public = form.is_public.data
         list_obj.icon = form.icon.data
+
+        # FIX: Convertir el ID de la categoría en un objeto
+        category = Category.query.get(form.category.data)
+        if not category:
+            flash("Categoría inválida.", "danger")
+            return render_template("lists/edit_list.html", form=form, list_obj=list_obj)
+
+        list_obj.category = category  # ✅ Ahora asignamos un objeto `Category`
+
 
         # Si el usuario sube una nueva imagen, la guardamos
         if form.image.data:
@@ -264,9 +273,10 @@ def lists_by_category(category_id):
     """Filtrar listas por categoría."""
     category = Category.query.get_or_404(category_id)
     filtered_lists = List.query.filter_by(category_id=category.id).all()
+    
     return render_template("lists/category.html",
                            lists=filtered_lists,
-                           category=category)
+                           category_name=category.name)  
 
 
 @lists_bp.route("/tag/<string:tag_name>")

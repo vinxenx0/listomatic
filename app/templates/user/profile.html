@@ -1,0 +1,100 @@
+{% extends "layout.html" %}
+
+{% block title %}Perfil de Usuario{% endblock %}
+
+{% block content %}
+<h2 class="text-center">👤 Perfil de Usuario</h2>
+
+<!-- 🔹 MÉTRICAS DEL USUARIO -->
+<div class="row text-center">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-header">📋 Listas Creadas</div>
+            <div class="card-body">
+                <h3>{{ total_listas }}</h3>
+                <p>Total de listas creadas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-header">📌 Ítems Añadidos</div>
+            <div class="card-body">
+                <h3>{{ total_items }}</h3>
+                <p>Total de ítems añadidos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-header">💬 Comentarios Recibidos</div>
+            <div class="card-body">
+                <h3>{{ total_comentarios }}</h3>
+                <p>Comentarios en tus listas</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🔹 LIKES Y DISLIKES -->
+<div class="row text-center">
+    <div class="col-md-6">
+        <div class="card text-white bg-info mb-3">
+            <div class="card-header">👍 Likes Recibidos</div>
+            <div class="card-body">
+                <h3>{{ total_likes }}</h3>
+                <p>Total de likes en tus listas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card text-white bg-danger mb-3">
+            <div class="card-header">👎 Dislikes Recibidos</div>
+            <div class="card-body">
+                <h3>{{ total_dislikes }}</h3>
+                <p>Total de dislikes en tus listas</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🔹 LISTAS CREADAS -->
+<div class="card mb-4">
+    <div class="card-header bg-dark text-white">📋 Últimas Listas Creadas</div>
+    <ul class="list-group list-group-flush">
+        {% for lista in listas_usuario %}
+        <li class="list-group-item">
+            <a href="{{ url_for('lists.view_list', list_id=lista.id) }}">
+                <strong>{{ lista.name }}</strong> ({{ lista.items|length }} ítems)
+            </a>
+            <span class="badge bg-primary">👍 {{ lista.count_likes() }}</span>
+            <span class="badge bg-danger">👎 {{ lista.count_dislikes() }}</span>
+        </li>
+        {% else %}
+        <li class="list-group-item text-center text-muted">No has creado listas aún.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- 🔹 ÍTEMS CREADOS -->
+<div class="card">
+    <div class="card-header bg-secondary text-white">📌 Últimos Ítems Añadidos</div>
+    <ul class="list-group list-group-flush">
+        {% for item in items_usuario %}
+        <li class="list-group-item">
+            <img src="{{ item.image_url }}" alt="Imagen del ítem" class="img-thumbnail" width="50">
+            {{ item.content }} <small class="text-muted">(Lista: <a href="{{ url_for('lists.view_list', list_id=item.list.id) }}">{{ item.list.name }}</a>)</small>
+        </li>
+        {% else %}
+        <li class="list-group-item text-center text-muted">No has añadido ítems aún.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- 🔹 BOTONES DE EDICIÓN -->
+<div class="text-center mt-4">
+    <a href="{{ url_for('users.edit_profile') }}" class="btn btn-primary">✏️ Editar Perfil</a>
+    <a href="{{ url_for('users.change_password') }}" class="btn btn-warning">🔑 Cambiar Contraseña</a>
+</div>
+
+{% endblock %}

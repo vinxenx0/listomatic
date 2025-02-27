@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block title %}Editar Lista{% endblock %}
+
+{% block content %}
+<h2 class="text-center">Editar Lista</h2>
+<form method="POST" enctype="multipart/form-data">  <!-- 🔥 Permitir subida de archivos -->
+    {{ form.hidden_tag() }}
+
+    <div class="mb-3">
+        {{ form.name.label(class="form-label") }}
+        {{ form.name(class="form-control") }}
+    </div>
+
+    <div class="mb-3">
+        {{ form.category.label(class="form-label") }}
+        {{ form.category(class="form-select") }}
+    </div>
+
+    <div class="mb-3">
+        {{ form.tags.label(class="form-label") }}
+        {{ form.tags(class="form-control") }}
+    </div>
+
+    <div class="form-check">
+        {{ form.is_public(class="form-check-input") }}
+        {{ form.is_public.label(class="form-check-label") }}
+    </div>
+
+    <div class="mb-3">
+        {{ form.icon.label(class="form-label") }}
+        {{ form.icon(class="form-control") }}
+        <small class="text-muted">Ejemplo: fas fa-star (FontAwesome)</small>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Imagen actual:</label> <br>
+        <img src="{{ list_obj.image_url }}" class="img-thumbnail" width="200" alt="Imagen actual">
+    </div>
+
+    <div class="mb-3">
+        {{ form.image.label(class="form-label") }}
+        {{ form.image(class="form-control") }}
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Guardar Cambios</button>
+</form>
+
+<a href="{{ url_for('lists.dashboard') }}" class="btn btn-secondary mt-2">Cancelar</a>
+{% endblock %}

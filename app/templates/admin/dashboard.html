@@ -1,0 +1,193 @@
+{% extends "layout.html" %}
+
+{% block title %}Panel de Administración{% endblock %}
+
+{% block content %}
+<h2 class="text-center">⚙️ Panel de Administración</h2>
+
+<!-- 🔹 MÉTRICAS GENERALES -->
+<div class="row text-center mb-4">
+    <div class="col-md-2">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-header">Usuarios</div>
+            <div class="card-body">
+                <h3>{{ total_users }}</h3>
+                <p>Total de usuarios registrados</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-header">Listas</div>
+            <div class="card-body">
+                <h3>{{ total_lists }}</h3>
+                <p>Total de listas creadas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-header">Ítems</div>
+            <div class="card-body">
+                <h3>{{ total_items }}</h3>
+                <p>Total de ítems añadidos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-danger mb-3">
+            <div class="card-header">Reacciones</div>
+            <div class="card-body">
+                <h3>👍 {{ total_likes }} | 👎 {{ total_dislikes }}</h3>
+                <p>Likes y dislikes en listas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-white bg-dark mb-3">
+            <div class="card-header">💬 Comentarios</div>
+            <div class="card-body">
+                <h3>{{ total_comments }}</h3>
+                <p>Total de comentarios en listas</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🔹 FILA 2: CONFIGURACIÓN GENERAL -->
+<div class="card mb-4">
+    <div class="card-header bg-dark text-white">🔧 Configuración General</div>
+    <div class="card-body">
+        <p><strong>Servidor SMTP:</strong> {{ config.smtp_server }}:{{ config.smtp_port }}</p>
+        <p><strong>Email del sistema:</strong> {{ config.email_user }}</p>
+        <p><strong>Categorías:</strong> {{ ", ".join(config.categories) }}</p>
+        <p><strong>Esquema de colores:</strong> {{ config.color_scheme }}</p>
+        <p><strong>URL de la aplicación:</strong> <a href="{{ config.app_url }}">{{ config.app_url }}</a></p>
+        <a href="{{ url_for('admin.edit_config') }}" class="btn btn-outline-primary">✏️ Editar Configuración</a>
+    </div>
+</div>
+
+<!-- 🔹 FILA 3: ÚLTIMOS REGISTROS -->
+<div class="row mb-4">
+    <!-- 🔹 Últimos Usuarios -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">👥 Últimos 10 Usuarios</div>
+            <ul class="list-group list-group-flush">
+                {% for user in recent_users %}
+                <li class="list-group-item">
+                    <strong>{{ user.username }}</strong> - {{ user.email }}
+                </li>
+                {% else %}
+                <li class="list-group-item text-center text-muted">No hay usuarios recientes</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- 🔹 Últimas Listas -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">📋 Últimas 10 Listas</div>
+            <ul class="list-group list-group-flush">
+                {% for lista in recent_lists %}
+                <li class="list-group-item">
+                    <strong>{{ lista.name }}</strong> ({{ lista.items|length }} ítems)
+                </li>
+                {% else %}
+                <li class="list-group-item text-center text-muted">No hay listas recientes</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- 🔹 Últimos Ítems -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-dark text-white">📌 Últimos 10 Ítems</div>
+            <ul class="list-group list-group-flush">
+                {% for item in recent_items %}
+                <li class="list-group-item">
+                    {{ item.content }} <small class="text-muted">(Lista: {{ item.list.name }})</small>
+                </li>
+                {% else %}
+                <li class="list-group-item text-center text-muted">No hay ítems recientes</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+<!-- 🔹 GRÁFICOS DE TENDENCIA -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">📈 Usuarios por Mes</div>
+            <div class="card-body">
+                <canvas id="usersChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">📉 Listas por Mes</div>
+            <div class="card-body">
+                <canvas id="listsChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🔹 ÚLTIMOS COMENTARIOS -->
+<div class="card mb-4">
+    <div class="card-header bg-secondary text-white">📝 Últimos 10 Comentarios</div>
+    <ul class="list-group list-group-flush">
+        {% for comment in recent_comments %}
+        <li class="list-group-item">
+            <strong>{{ comment.user.username }}</strong> comentó en <a href="{{ url_for('lists.view_list', list_id=comment.list_id) }}">{{ comment.list_obj.name }}</a>:
+            <br>
+            <span class="text-muted">"{{ comment.content }}"</span>
+            <small class="text-muted d-block mt-1">Publicado el {{ comment.created_at.strftime('%d-%m-%Y %H:%M') }}</small>
+        </li>
+        {% else %}
+        <li class="list-group-item text-center text-muted">No hay comentarios recientes</li>
+        {% endfor %}
+    </ul>
+</div>
+
+{% include 'admin/dashboard.js' %}
+
+<!-- 🔹 Cargar Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // 🔹 Datos de Usuarios por Mes
+    const usersData = {
+        labels: [{% for month, count in users_per_month %} "{{ month }}", {% endfor %}],
+        datasets: [{
+            label: 'Usuarios Registrados',
+            data: [{% for month, count in users_per_month %} {{ count }}, {% endfor %}],
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 2
+        }]
+    };
+
+    // 🔹 Datos de Listas por Mes
+    const listsData = {
+        labels: [{% for month, count in lists_per_month %} "{{ month }}", {% endfor %}],
+        datasets: [{
+            label: 'Listas Creadas',
+            data: [{% for month, count in lists_per_month %} {{ count }}, {% endfor %}],
+            backgroundColor: 'rgba(75, 192, 192, 0.5)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 2
+        }]
+    };
+
+    // 🔹 Configurar gráficos
+    new Chart(document.getElementById('usersChart'), { type: 'line', data: usersData });
+    new Chart(document.getElementById('listsChart'), { type: 'line', data: listsData });
+</script>
+{% endblock %}
+

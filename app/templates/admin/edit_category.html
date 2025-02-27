@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+
+{% block title %}Editar Categoría{% endblock %}
+
+{% block content %}
+<h2 class="text-center">✏️ Editar Categoría</h2>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+        {{ form.name.label(class="form-label") }}
+        {{ form.name(class="form-control") }}
+    </div>
+    <button type="submit" class="btn btn-primary w-100">Actualizar</button>
+    <a href="{{ url_for('admin.manage_categories') }}" class="btn btn-secondary w-100 mt-2">Cancelar</a>
+</form>
+{% endblock %}

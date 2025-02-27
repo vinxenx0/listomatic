@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+
+{% block title %}Editar Configuración{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center">⚙️ Editar Configuración de la Aplicación</h2>
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="mb-3">
+            {{ form.smtp_server.label(class="form-label") }}
+            {{ form.smtp_server(class="form-control") }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.smtp_port.label(class="form-label") }}
+            {{ form.smtp_port(class="form-control") }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.email_user.label(class="form-label") }}
+            {{ form.email_user(class="form-control") }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.email_password.label(class="form-label") }}
+            {{ form.email_password(class="form-control") }}
+            <small class="text-muted">Dejar vacío para mantener la contraseña actual.</small>
+        </div>
+
+        <div class="mb-3">
+            {{ form.categories.label(class="form-label") }}
+            {{ form.categories(class="form-control") }}
+            <small class="text-muted">Separar categorías con comas.</small>
+        </div>
+
+        <div class="mb-3">
+            {{ form.color_scheme.label(class="form-label") }}
+            {{ form.color_scheme(class="form-select") }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.app_url.label(class="form-label") }}
+            {{ form.app_url(class="form-control") }}
+        </div>
+
+        <button type="submit" class="btn btn-success w-100">Guardar Cambios</button>
+        <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-secondary w-100 mt-2">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

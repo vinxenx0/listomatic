@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block title %}Administrar Etiquetas{% endblock %}
+
+{% block content %}
+<h2 class="text-center">Administrar Etiquetas</h2>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+        {{ form.name.label(class="form-label") }}
+        {{ form.name(class="form-control") }}
+    </div>
+    <button type="submit" class="btn btn-success">Agregar Etiqueta</button>
+</form>
+
+{% if tags %}
+    <ul class="list-group mt-4">
+        {% for tag in tags %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ tag.name }}
+                <a href="{{ url_for('tags.delete_tag', tag_id=tag.id) }}" class="btn btn-danger btn-sm">Eliminar</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p class="text-center">No hay etiquetas aún.</p>
+{% endif %}
+{% endblock %}

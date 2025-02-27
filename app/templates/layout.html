@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Personal Lists{% endblock %}</title>
+    {{ bootstrap.load_css() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+    {% include 'components/navbar.html' %}
+
+    <div class="container mt-4">
+        {% include 'components/messages.html' %}
+        {% block content %}{% endblock %}
+    </div>
+
+    {{ bootstrap.load_js() }}
+</body>
+</html>

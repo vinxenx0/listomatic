@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+
+{% block title %}Mis Listas{% endblock %}
+
+{% block content %}
+<h2 class="text-center">Mis Listas</h2>
+<a href="{{ url_for('lists.create_list') }}" class="btn btn-success mb-3">➕ Crear Lista</a>
+
+{% if lists %}
+<div class="list-group">
+    {% for list in lists %}
+    <div class="list-group-item d-flex align-items-center">
+        <img src="{{ url_for('static', filename=list.image_url if list.image_url else 'default_thumbnail.png') }}"
+            class="img-thumbnail me-3" width="50" alt="Imagen de la lista">
+
+        <div>
+            <a href="{{ url_for('lists.view_list', list_id=list.id) }}" class="list-group-item list-group-item-action">
+                <strong>{{ list.name }}</strong> ({{ list.items|length }} ítems)
+            </a>
+            {% if list.is_public %}
+            <span class="badge bg-success">Pública</span>
+            {% else %}
+            <span class="badge bg-secondary">Privada</span>
+            {% endif %}
+
+            {% if list.category %}
+            <a href="{{ url_for('lists.lists_by_category', category_id=list.category.id) }}" class="badge bg-info">
+                {{ list.category.name }}
+            </a>
+            
+
+            {% else %}
+            <span class="badge bg-secondary">Sin categoría</span>
+            {% endif %}
+
+            {% for tag in list.tags %}
+            <a href="{{ url_for('lists.lists_by_tag', tag_name=tag.name) }}" class="badge bg-secondary">
+                {{ tag.name }}
+            </a>
+            {% endfor %}
+            📌 {{ list.items|length }} ítems &bull; 💬 {{ list.count_comments() }} comentarios &bull;
+            <span class="badge bg-primary">👍 {{ list.count_likes() }}</span>
+            <span class="badge bg-danger">👎 {{ list.count_dislikes() }}</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<p class="text-center">No tienes listas creadas. ¡Empieza ahora!</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ list_obj.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center">
+        {% if list_obj.icon %} <i class="{{ list_obj.icon }}"></i> {% endif %}
+        📋 {{ list_obj.name }}
+        {% if list_obj.category %}
+        <a href="{{ url_for('lists.lists_by_category', category_id=list_obj.category.id) }}" class="badge bg-info">
+            {{ list_obj.category.name }}
+        </a>
+        
+            {% endif %}
+    </h2>
+
+    <p class="text-muted">
+        🏷 Creado por: <strong>{{ list_obj.owner.username }}</strong> <br>
+        📅 Creado el: {{ list_obj.timestamp.strftime('%d/%m/%Y %H:%M') }} <br>
+        🔄 Última actualización: {{ list_obj.updated_at.strftime('%d/%m/%Y %H:%M') }}
+    </p>
+
+    <img src="{{ url_for('static', filename=list_obj.image_url if list_obj.image_url else 'default_thumbnail.png') }}" 
+     class="img-fluid rounded mx-auto d-block" width="200" alt="Imagen de la lista">
+
+
+    {% if list_obj.tags %}
+    <div>
+
+        {% for tag in list_obj.tags %}
+        <span class="badge bg-info">
+            {{ tag.name }}{% if not loop.last %}, {% endif %}
+        </span>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if list_obj.is_public %}
+    <form action="{{ url_for('lists.like_list', list_id=list_obj.id, action='like') }}" method="POST" class="d-inline">
+        {{ form.hidden_tag() }}
+        <button type="submit" class="btn btn-success">👍 Like ({{ list_obj.count_likes() }})</button>
+    </form>
+
+    <form action="{{ url_for('lists.like_list', list_id=list_obj.id, action='dislike') }}" method="POST"
+        class="d-inline">
+        {{ form.hidden_tag() }}
+        <button type="submit" class="btn btn-danger">👎 Dislike ({{ list_obj.count_dislikes() }})</button>
+    </form>
+
+
+    {% endif %}
+
+    {% if current_user.is_authenticated and current_user.id == list_obj.user_id %}
+    <a href="{{ url_for('lists.edit_list', list_id=list_obj.id) }}" class="btn btn-warning mb-2">✏️ Editar Lista</a>
+    <a href="{{ url_for('lists.delete_list', list_id=list_obj.id) }}" class="btn btn-danger mb-2">🗑 Eliminar Lista</a>
+    {% endif %}
+
+    <h4 class="mt-4">Ítems en la lista</h4>
+    {% if list_obj.items %}
+    <ul class="list-group">
+        {% for item in list_obj.items %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <img src="{{ url_for('static', filename=item.image_url) }}" class="img-thumbnail" width="100"
+                alt="Imagen del ítem">
+
+            <!-- <img src="{{ item.image_url }}" alt="Imagen del ítem" class="img-thumbnail" width="50"> -->
+            <div>
+                {{ item.content }} (⭐ {{ item.average_rating() }}/5)
+                <form action="{{ url_for('items.rate_item', item_id=item.id) }}" method="POST" class="d-inline">
+                    {{ form.hidden_tag() }}
+                    <select name="rating" class="form-select form-select-sm d-inline w-auto">
+                        {% for i in range(6) %}
+                        <option value="{{ i }}" {% if current_user in item.ratings and item_ratings[current_user.id]==i
+                            %}selected{% endif %}>{{ i }}⭐</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-primary">Votar</button>
+                </form>
+            </div>
+            {% if current_user.is_authenticated and current_user.id == list_obj.user_id %}
+            <div>
+                <a href="{{ url_for('items.edit_item', item_id=item.id) }}" class="btn btn-sm btn-primary">✏️</a>
+                <a href="{{ url_for('items.delete_item', item_id=item.id) }}" class="btn btn-sm btn-danger">🗑</a>
+            </div>
+            {% endif %}
+
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-muted">Esta lista no tiene ítems aún.</p>
+    {% endif %}
+
+    <h4 class="mt-4">💬 Comentarios ({{ list_obj.count_comments() }})</h4> <!-- ✅ NUEVO: Contador de comentarios -->
+
+
+    {% if list_obj.comments %}
+    <ul class="list-group">
+        {% for comment in list_obj.comments | reverse %}
+        <li class="list-group-item">
+            <strong>{{ comment.user.username }}</strong> - {{ comment.created_at.strftime("%d/%m/%Y %H:%M") }}
+            <p>{{ comment.content }}</p>
+            {% if current_user.is_authenticated and (current_user.id == comment.user_id or current_user.id ==
+            list_obj.user_id or current_user.is_admin()) %}
+            <form action="{{ url_for('comments.delete_comment', comment_id=comment.id) }}" method="POST"
+                class="d-inline">
+                <button type="submit" class="btn btn-danger btn-sm">🗑 Eliminar</button>
+            </form>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-muted">No hay comentarios aún.</p>
+    {% endif %}
+
+    {% if current_user.is_authenticated %}
+    <form action="{{ url_for('comments.add_comment', list_id=list_obj.id) }}" method="POST" class="mt-3">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.content.label(class="form-label") }}
+            {{ form.content(class="form-control") }}
+        </div>
+        <button type="submit" class="btn btn-primary w-100">💬 Comentar</button>
+    </form>
+    {% else %}
+    <p class="text-center"><a href="{{ url_for('auth.login') }}">Inicia sesión</a> para comentar.</p>
+    {% endif %}
+
+
+
+    {% if current_user.is_authenticated and current_user.id == list_obj.user_id %}
+    <h4 class="mt-4">➕ Añadir un Ítem</h4>
+    <form method="POST" action="{{ url_for('items.add_item', list_id=list_obj.id) }}" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.content.label(class="form-label") }}
+            {{ form.content(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.image.label(class="form-label") }}
+            {{ form.image(class="form-control") }}
+        </div>
+        <button type="submit" class="btn btn-success w-100">Agregar Ítem</button>
+    </form>
+    {% endif %}
+
+
+
+</div>
+{% endblock %}

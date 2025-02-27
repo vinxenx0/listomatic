@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+
+{% block title %}Administrar Categorías{% endblock %}
+
+{% block content %}
+<h2 class="text-center">📂 Administrar Categorías</h2>
+
+<a href="{{ url_for('admin.add_category') }}" class="btn btn-success mb-3">➕ Añadir Categoría</a>
+
+{% if categories %}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for category in categories %}
+        <tr>
+            <td>{{ category.name }}</td>
+            <td>
+                <a href="{{ url_for('admin.edit_category', category_id=category.id) }}" class="btn btn-warning btn-sm">✏️ Editar</a>
+                <form action="{{ url_for('admin.delete_category', category_id=category.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar categoría?')">🗑 Eliminar</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="text-center text-muted">No hay categorías aún.</p>
+{% endif %}
+
+{% endblock %}

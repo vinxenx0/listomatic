@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+
+{% block title %}Inicio - MyLists 📋{% endblock %}
+
+{% block content %}
+
+{% if not current_user.is_authenticated %}
+<div class="text-center mt-5">
+    <h1 class="fw-bold">Bienvenido a <span class="text-primary">MyLists 📋</span></h1>
+    <p class="lead text-muted">Organiza tus tareas y listas de forma sencilla y eficiente.</p>
+    <a class="btn btn-lg btn-primary me-2" href="{{ url_for('auth.register') }}">
+        🚀 Regístrate
+    </a>
+    <a class="btn btn-lg btn-outline-secondary" href="{{ url_for('auth.login') }}">
+        🔑 Iniciar sesión
+    </a>
+</div>
+{% endif %}
+
+<h2 class="text-center mt-5">🌍 Listas Públicas</h2>
+
+{% if public_lists %}
+<div class="container mt-4">
+    <div class="row">
+        {% for list in public_lists %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <img src="{{ url_for('static', filename=list.image_url if list.image_url else 'default_thumbnail.png') }}"
+                        class="img-thumbnail me-3" width="50" alt="Imagen de la lista">
+
+                    <h5 class="card-title">
+                        {% if list.category %}
+                        <a href="{{ url_for('lists.lists_by_category', category_id=list.category.id) }}"
+                            class="badge bg-info">
+                            {{ list.category.name }}
+                        </a>
+
+                        {% endif %}
+                        <a href="{{ url_for('lists.view_list', list_id=list.id) }}"
+                            class="text-dark text-decoration-none">
+                            📄 <strong>{{ list.name }}</strong>
+                        </a>
+                    </h5>
+                    <p class="card-text text-muted">
+                        📌 {{ list.items|length }} ítems &bull; 💬 {{ list.count_comments() }} comentarios &bull;
+                        👍 {{ list.count_likes() }} likes &bull; 👎 {{ list.count_dislikes() }} dislikes
+                    </p>
+
+                    <div class="d-flex flex-wrap">
+                        {% for tag in list.tags %}
+                        <a href="{{ url_for('lists.lists_by_tag', tag_name=tag.name) }}"
+                            class="badge bg-secondary text-decoration-none me-1 mb-1">
+                            #{{ tag.name }} ({{ tag_counts.get(tag.name, 0) }})
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<p class="text-center text-muted mt-4">No hay listas públicas aún. ¡Sé el primero en crear una! 🚀</p>
+{% endif %}
+
+
+{% endblock %}

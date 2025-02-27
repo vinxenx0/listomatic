@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+
+{% block title %}Eliminar Lista{% endblock %}
+
+{% block content %}
+<h2 class="text-center text-danger">¿Seguro que deseas eliminar esta lista?</h2>
+<form method="POST">
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a href="{{ url_for('lists.dashboard') }}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

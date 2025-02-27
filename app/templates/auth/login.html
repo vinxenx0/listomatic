@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+
+{% block title %}Iniciar Sesión{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-4">
+        <h2 class="text-center">Iniciar Sesión</h2>
+        <form method="POST">
+            {{ form.hidden_tag() }}  <!-- ✅ Asegurar que CSRF Token está aquí -->
+        
+            <div class="mb-3">
+                {{ form.email.label(class="form-label") }}
+                {{ form.email(class="form-control") }}  <!-- ✅ QUITA `name="email"` -->
+            </div>
+            <div class="mb-3">
+                {{ form.password.label(class="form-label") }}
+                {{ form.password(class="form-control") }}  <!-- ✅ QUITA `name="password"` -->
+            </div>
+            <div class="mb-3">
+                {{ form.submit(class="btn btn-primary w-100") }}
+            </div>
+        </form>
+        
+        
+        
+    </div>
+</div>
+{% endblock %}

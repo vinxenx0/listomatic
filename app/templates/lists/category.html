@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block title %}Listas en "{{ category }}"{% endblock %}
+
+{% block content %}
+<h2 class="text-center">📂 Listas en la categoría: "{{ category }}"</h2>
+
+{% if lists %}
+    <div class="list-group">
+        {% for list in lists %}
+        <div class="list-group-item">
+            <a href="{{ url_for('lists.view_list', list_id=list.id) }}" class="list-group-item list-group-item-action">
+                <strong>{{ list.name }}</strong> ({{ list.items|length }} ítems)
+            </a>
+
+            <!-- ✅ Mostrar la imagen de la lista -->
+            <img src="{{ url_for('static', filename=list.image_url or 'default_thumbnail.jpg') }}" class="img-thumbnail mt-2" width="100">
+
+            <!-- ✅ Mostrar etiquetas -->
+            <div>
+                {% for tag in list.tags %}
+                <a href="{{ url_for('lists.lists_by_tag', tag_name=tag.name) }}" class="badge bg-secondary">#{{ tag.name }}</a>
+                {% endfor %}
+            </div>
+
+            <!-- ✅ Mostrar Likes y Dislikes -->
+            <div class="mt-2">
+                <span class="badge bg-primary">👍 {{ list.count_likes() }}</span>
+                <span class="badge bg-danger">👎 {{ list.count_dislikes() }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="text-center">No hay listas en esta categoría.</p>
+{% endif %}
+
+<a href="{{ url_for('home.home') }}" class="btn btn-secondary mt-3">⬅️ Volver al Inicio</a>
+{% endblock %}

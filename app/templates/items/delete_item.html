@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block title %}Eliminar Ítem{% endblock %}
+
+{% block content %}
+<h2 class="text-center text-danger">¿Seguro que deseas eliminar este ítem?</h2>
+<form method="POST">
+    {{ form.hidden_tag() }}  
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a href="{{ url_for('lists.view_list', list_id=item.list.id) }}" class="btn btn-secondary">Cancelar</a>
+</form>
+
+{% endblock %}

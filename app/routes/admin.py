@@ -148,3 +148,20 @@ def delete_category(category_id):
     db.session.commit()
     flash("Categoría eliminada con éxito", "danger")
     return redirect(url_for("admin.manage_categories"))
+
+
+@admin_bp.route("/users")
+@admin_required
+def manage_users():
+    """Lista de usuarios registrados"""
+    users = User.query.order_by(User.id.desc()).all()
+    return render_template("admin/manage_users.html", users=users)
+
+
+@admin_bp.route("/badges")
+@admin_required
+def manage_badges():
+    """Lista de badges disponibles"""
+    from app.models.badge import Badge
+    badges = Badge.get_all()
+    return render_template("admin/manage_badges.html", badges=badges)

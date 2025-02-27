@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+
+{% block title %}Usuarios - Admin{% endblock %}
+
+{% block content %}
+<h2 class="text-center">👤 Administración de Usuarios</h2>
+
+<table class="table table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Usuario</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>Puntos</th>
+            <th>Badges</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+            <td>
+                {% if user.is_admin() %}
+                    <span class="badge bg-danger">Admin</span>
+                {% else %}
+                    <span class="badge bg-secondary">Usuario</span>
+                {% endif %}
+            </td>
+            <td>{{ user.score }}</td>
+            <td>
+                {% for badge in user.badges %}
+                    <img src="{{ url_for('static', filename=badge.image_url) }}" alt="{{ badge.name }}" width="30">
+                {% endfor %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

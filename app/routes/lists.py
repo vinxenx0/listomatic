@@ -31,11 +31,10 @@ def dashboard():
     user_lists = List.query.filter_by(user_id=current_user.id).all()
 
     category_counts = {category.name: 0 for category in Category.get_all()}
-    for category_name, count in (db.session.query(
-            List.category, func.count(
-                List.id)).filter(List.user_id == current_user.id).group_by(
-                    List.category).all()):
-        category_counts[category_name] = count
+    if current_user.is_authenticated:
+        for category_name, count in db.session.query(List.category, func.count(List.id)) \
+                .filter(List.user_id == current_user.id).group_by(List.category).all():
+            category_counts[category_name] = count
 
     return render_template("lists/dashboard.html",
                            lists=user_lists,
@@ -77,6 +76,8 @@ def create_list():
             user_id=current_user.id)
 
         db.session.add(new_list)
+
+        current_user.add_score(1)
 
         # Procesar etiquetas
         if form.tags.data is None or not isinstance(form.tags.data, str):
@@ -188,12 +189,15 @@ def view_list(list_id):
 
     form = ItemForm()
 
+    # 🔹 Si el usuario no está autenticado, no intentamos acceder a su ID
     category_counts = {category.name: 0 for category in Category.get_all()}
-    for category_name, count in (db.session.query(
-            List.category, func.count(
-                List.id)).filter(List.user_id == current_user.id).group_by(
-                    List.category).all()):
-        category_counts[category_name] = count
+
+    if current_user.is_authenticated:
+        for category_name, count in (db.session.query(
+                List.category, func.count(
+                    List.id)).filter(List.user_id == current_user.id).group_by(
+                        List.category).all()):
+            category_counts[category_name] = count
 
     # Obtener los ratings de cada ítem en esta lista hechos por el usuario actual
     user_ratings = {}
@@ -224,12 +228,14 @@ def like_list(list_id, action):
 
     is_like = action == "like"
 
-    # Verificar si el usuario ya tiene un registro en likes_table
+    if not current_user.is_authenticated:  # 🔹 Validar autenticación
+        flash("Debes iniciar sesión para votar.", "warning")
+        return redirect(url_for("auth.login"))
+
     existing_like = db.session.query(likes_table).filter_by(
         user_id=current_user.id, list_id=list_id).first()
 
     if existing_like:
-        # Si el usuario ya dio like/dislike y selecciona la misma acción, eliminarlo
         if existing_like.is_like == is_like:
             db.session.execute(likes_table.delete().where(
                 (likes_table.c.user_id == current_user.id)
@@ -237,18 +243,17 @@ def like_list(list_id, action):
             db.session.commit()
             flash("Tu voto ha sido eliminado", "info")
         else:
-            # Si cambia de like a dislike o viceversa, actualizar
             db.session.execute(likes_table.update().where(
                 (likes_table.c.user_id == current_user.id)
                 & (likes_table.c.list_id == list_id)).values(is_like=is_like))
             db.session.commit()
             flash("Tu voto ha sido actualizado", "success")
     else:
-        # Insertar nuevo like o dislike
         db.session.execute(likes_table.insert().values(user_id=current_user.id,
                                                        list_id=list_id,
                                                        is_like=is_like))
         db.session.commit()
+        current_user.add_score(0.1)
         flash("Tu voto ha sido registrado", "success")
 
     return redirect(url_for("lists.view_list", list_id=list_id))

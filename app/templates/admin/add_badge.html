@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+
+{% block title %}➕ Crear Badge{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center">➕ Crear Nuevo Badge</h2>
+    
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="mb-3">
+            {{ form.name.label(class="form-label") }}
+            {{ form.name(class="form-control") }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control") }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.min_score.label(class="form-label") }}
+            {{ form.min_score(class="form-control") }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.image_url.label(class="form-label") }}
+            {{ form.image_url(class="form-control") }}
+        </div>
+
+        <button type="submit" class="btn btn-success w-100">Guardar Badge</button>
+        <a href="{{ url_for('admin_badges.badge_list') }}" class="btn btn-secondary w-100 mt-2">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

@@ -13,9 +13,37 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('users.profile') }}">Perfil</a>
                     </li>
+
+                    {% if current_user.is_admin() %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-warning" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+                            ⚙️ Admin
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('admin.admin_dashboard') }}">📊 Dashboard</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.manage_categories') }}">📂 Categorías</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.manage_badges') }}">🏅 Badges</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.edit_config') }}">⚙️ Configuración</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.manage_users') }}">👤 Usuarios</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+
                     <li class="nav-item">
                         <a class="nav-link text-danger" href="{{ url_for('auth.logout') }}">Salir</a>
                     </li>
+
+                    <!-- 🔥 BOTÓN PARA CAMBIAR TEMA -->
+                    <li class="nav-item">
+                        <button class="btn btn-outline-light ms-3" onclick="toggleTheme()">
+                            {% if current_user.theme == "light" %}
+                                🌙 Modo Oscuro
+                            {% else %}
+                                ☀️ Modo Claro
+                            {% endif %}
+                        </button>
+                    </li>
+
                 {% else %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('auth.login') }}">Iniciar sesión</a>

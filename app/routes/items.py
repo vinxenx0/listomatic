@@ -40,6 +40,7 @@ def add_item(list_id):
                         image_url=image_url)
         db.session.add(new_item)
         db.session.commit()
+        current_user.add_score(0.1)
         flash("Ítem agregado con éxito!", "success")
         return redirect(url_for("lists.view_list", list_id=list_id))
 
@@ -91,6 +92,7 @@ def rate_item(item_id):
             (item_ratings.c.user_id == current_user.id)
             & (item_ratings.c.item_id == item_id)).values(rating=rating))
     else:
+        current_user.add_score(0.1)
         db.session.execute(item_ratings.insert().values(
             user_id=current_user.id, item_id=item_id, rating=rating))
 

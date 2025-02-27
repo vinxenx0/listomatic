@@ -3,7 +3,33 @@
 {% block title %}Perfil de Usuario{% endblock %}
 
 {% block content %}
-<h2 class="text-center">👤 Perfil de Usuario</h2>
+<h2 class="text-center">👤 Perfil de {{ user.username }}</h2>
+
+<p class="text-muted">📧 Email: {{ user.email }}</p>
+<p>🌟 Puntuación: <strong>{{ user.score }} puntos</strong></p>
+
+<h3 class="mt-4">🏆 Mis Badges</h3>
+{% if user.badges %}
+<div class="row">
+    {% for badge in user.badges %}
+    <div class="col-md-3">
+        <div class="card text-center shadow-sm">
+            <img src="{{ url_for('static', filename=badge.image_url) }}" class="card-img-top p-3" alt="Badge">
+            <div class="card-body">
+                <h6 class="card-title">{{ badge.name }}</h6>
+                <p class="text-muted small">{{ badge.description }}</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-muted">Aún no tienes badges. ¡Sigue participando para obtenerlos! 🏅</p>
+{% endif %}
+
+
+
+
 
 <!-- 🔹 MÉTRICAS DEL USUARIO -->
 <div class="row text-center">

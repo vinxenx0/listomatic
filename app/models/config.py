@@ -12,17 +12,17 @@ class AppConfig(db.Model):
     email_password = db.Column(db.String(255), nullable=False, default="")  # 🔹 Encriptar en producción
     
     # Categorías de listas (JSON)
-    categories = db.Column(JSON, nullable=False, default=lambda: ["Trabajo", "Personal", "Compras", "Otros"])
+    categories = db.Column(JSON, nullable=False, default=lambda: ["General", "Cultura", "Política", "Eventos","+ 18"])
     
     # Usuarios con acceso a la API
     api_users = db.Column(JSON, nullable=False, default=lambda: {})  # {"username": "hashed_password"}
     
     # Badges y sistema de puntuación
-    badges = db.Column(JSON, nullable=False, default=lambda: {
-        "Novato": {"score": 100, "image": "badges/novato.png"},
-        "Experto": {"score": 500, "image": "badges/experto.png"},
-        "Maestro": {"score": 1000, "image": "badges/maestro.png"}
-    })
+    #badges = db.Column(JSON, nullable=False, default=lambda: {
+    #    "Novato": {"score": 100, "image": "badges/novato.png"},
+    #    "Experto": {"score": 500, "image": "badges/experto.png"},
+    #    "Maestro": {"score": 1000, "image": "badges/maestro.png"}
+    #})
     
     # Configuración de colores (tema visual)
     color_scheme = db.Column(db.String(50), default="light")  # "light" o "dark"

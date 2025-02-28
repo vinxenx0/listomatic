@@ -6,6 +6,7 @@ from flask import current_app
 from app import db
 from app.models.item import Item, item_ratings
 from app.forms.list_forms import ItemForm
+from app.models.list import List
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
@@ -41,6 +42,12 @@ def add_item(list_id):
         db.session.add(new_item)
         db.session.commit()
         current_user.add_score(0.1)
+
+        list_obj = List.query.get(list_id)
+        if list_obj:
+            list_obj.notify_followers(f"📌 Se ha añadido un nuevo ítem a la lista '{list_obj.name}'.")
+
+        
         flash("Ítem agregado con éxito!", "success")
         return redirect(url_for("lists.view_list", list_id=list_id))
 
@@ -68,6 +75,7 @@ def edit_item(item_id):
                 item.image_url = f"uploads/{filename}"  # Guardamos solo la ruta relativa
 
         db.session.commit()
+
         flash("Ítem actualizado con éxito!", "success")
         return redirect(url_for("lists.view_list", list_id=item.list.id))
 

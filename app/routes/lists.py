@@ -163,6 +163,7 @@ def edit_list(list_id):
         list_obj.updated_at = datetime.utcnow()
 
         db.session.commit()
+        list_obj.notify_followers(f"📌 La lista '{list_obj.name}' ha sido actualizada.")
         flash("Lista actualizada con éxito", "success")
         return redirect(url_for("lists.dashboard"))
 
@@ -181,6 +182,7 @@ def delete_list(list_id):
     if request.method == "POST":
         db.session.delete(list_obj)
         db.session.commit()
+        list_obj.notify_followers(f"📌 La lista '{list_obj.name}' ha sido eliminada.")
         flash("Lista eliminada", "danger")
         return redirect(url_for("lists.dashboard"))
 

@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 from app import db
 from app.models.comment import Comment
+from app.models.notification import Notification
 from app.models.tag import list_tags
 from app.models.user import User
 
@@ -9,7 +10,13 @@ likes_table = db.Table(
     "likes",
     db.Column("user_id", db.Integer, db.ForeignKey("user.id"), primary_key=True),
     db.Column("list_id", db.Integer, db.ForeignKey("list.id"), primary_key=True),
-    db.Column("is_like", db.Boolean, nullable=False)  # ✅ Registra si es un like o dislike
+    db.Column("is_like", db.Boolean, nullable=False)
+)
+
+follows_table = db.Table(
+    "follows",
+    db.Column("user_id", db.Integer, db.ForeignKey("user.id"), primary_key=True),
+    db.Column("list_id", db.Integer, db.ForeignKey("list.id"), primary_key=True)
 )
 
 class List(db.Model):
@@ -29,7 +36,46 @@ class List(db.Model):
     comments = db.relationship("Comment", back_populates="list_obj", lazy=True, cascade="all, delete-orphan")
 
     category_id = db.Column(db.Integer, db.ForeignKey("category.id", ondelete="SET NULL"), nullable=True)
-    category = db.relationship("Category", backref="lists")  # ✅ Relación SQLAlchemy con Category
+    category = db.relationship("Category", backref="lists")
+
+    followers = db.relationship("User", secondary=follows_table, backref="following_lists")
+
+
+    def notify_followers(self, message):
+        """Notificar a los usuarios que siguen esta lista."""
+        from app.models.following_notifications import FollowingNotification
+        for user in self.followers:
+            notification = FollowingNotification(
+                user_id=user.id, 
+                list_id=self.id, 
+                type="update",  # 🔥 Se añade un tipo válido
+                message=message
+            )
+            db.session.add(notification)
+        db.session.commit()
+
+    # ✅ Método para marcar las notificaciones de following de esta lista como leídas
+    def mark_notifications_as_read(self, user):
+        """Marca como leídas las notificaciones de esta lista para un usuario en seguimiento."""
+        from app.models.following_notifications import FollowingNotification
+
+        notifications = FollowingNotification.query.filter_by(user_id=user.id, list_id=self.id, is_read=False).all()
+        for notification in notifications:
+            notification.is_read = True  # ✅ Ahora marca las notificaciones correctas
+
+        db.session.commit()
+
+
+    def has_unread_notifications(self):
+        """Verifica si la lista tiene notificaciones no leídas para el usuario actual."""
+        from flask_login import current_user
+        from app.models.following_notifications import FollowingNotification
+        
+        return FollowingNotification.query.filter_by(
+            list_id=self.id,
+            user_id=current_user.id,
+            is_read=False
+        ).count() > 0
 
     def category_name(self):
         """Devuelve el nombre de la categoría o 'Sin categoría' si no tiene."""

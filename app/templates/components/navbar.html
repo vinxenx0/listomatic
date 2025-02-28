@@ -7,70 +7,100 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 {% if current_user.is_authenticated %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link position-relative" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown">
-                            🔔
-                            {% if current_user.unread_notifications_count() > 0 %}
-                            <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">
-                                {{ current_user.unread_notifications_count() }}
-                            </span>
-                            {% endif %}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown">
-                            {% for notification in current_user.get_notifications()[:5] %}
-                            <li class="dropdown-item {% if not notification.is_read %}fw-bold{% endif %}">
-                                {{ notification.message }} <br>
-                                <small class="text-muted">{{ notification.timestamp.strftime('%d/%m/%Y %H:%M') }}</small>
-                            </li>
-                            {% endfor %}
-                            <li><a class="dropdown-item text-center" href="{{ url_for('notifications.view_all') }}">Ver todas</a></li>
-                        </ul>
-                    </li>
-                
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('lists.dashboard') }}">Mis Listas</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('users.profile') }}">Perfil</a>
-                    </li>
 
-                    {% if current_user.is_admin() %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle text-warning" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
-                            ⚙️ Admin
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('admin.admin_dashboard') }}">📊 Dashboard</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('admin.manage_categories') }}">📂 Categorías</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('admin.manage_badges') }}">🏅 Badges</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('admin.edit_config') }}">⚙️ Configuración</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('admin.manage_users') }}">👤 Usuarios</a></li>
-                        </ul>
-                    </li>
-                    {% endif %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link position-relative" href="#" id="followingDropdown" role="button"
+                        data-bs-toggle="dropdown">
+                        🔖 Siguiendo
+                        {% if current_user.unread_following_notifications_count() > 0 %}
+                        <span class="badge bg-danger">{{ current_user.unread_following_notifications_count() }}</span>
+                        {% endif %}
+                    </a>
 
-                    <li class="nav-item">
-                        <a class="nav-link text-danger" href="{{ url_for('auth.logout') }}">Salir</a>
-                    </li>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="followingDropdown">
+                        {% for notification in current_user.get_following_notifications()[:5] %}
+                        <li class="dropdown-item {% if not notification.is_read %}fw-bold{% endif %}">
+                            {{ notification.message }} <br>
+                            <small class="text-muted">{{ notification.timestamp.strftime('%d/%m/%Y %H:%M') }}</small>
+                        </li>
+                        {% endfor %}
+                        <li><a class="dropdown-item text-center" href="{{ url_for('following.view_following') }}">Ver
+                                todas</a></li>
+                    </ul>
+                </li>
 
-                    <!-- 🔥 BOTÓN PARA CAMBIAR TEMA -->
-                    <li class="nav-item">
-                        <button class="btn btn-outline-light ms-3" onclick="toggleTheme()">
-                            {% if current_user.theme == "light" %}
-                                🌙 Modo Oscuro
-                            {% else %}
-                                ☀️ Modo Claro
-                            {% endif %}
-                        </button>
-                    </li>
+
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('lists.dashboard') }}">Mis Listas</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('users.profile') }}">Perfil</a>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link position-relative" href="#" id="notificationsDropdown" role="button"
+                        data-bs-toggle="dropdown">
+                        🔔
+                        {% if current_user.unread_notifications_count() > 0 %}
+                        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">
+                            {{ current_user.unread_notifications_count() }}
+                        </span>
+                        {% endif %}
+                    </a>
+
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown">
+                        {% for notification in current_user.get_notifications()[:5] %}
+                        <li class="dropdown-item {% if not notification.is_read %}fw-bold{% endif %}">
+                            {{ notification.message }} <br>
+                            <small class="text-muted">{{ notification.timestamp.strftime('%d/%m/%Y %H:%M') }}</small>
+                        </li>
+                        {% endfor %}
+                        <li><a class="dropdown-item text-center" href="{{ url_for('notifications.view_all') }}">Ver
+                                todas</a></li>
+                    </ul>
+                </li>
+
+
+                {% if current_user.is_admin() %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-warning" href="#" id="adminDropdown" role="button"
+                        data-bs-toggle="dropdown">
+                        ⚙️ Admin
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{{ url_for('admin.admin_dashboard') }}">📊 Dashboard</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('admin.manage_categories') }}">📂 Categorías</a>
+                        </li>
+                        <li><a class="dropdown-item" href="{{ url_for('admin.manage_badges') }}">🏅 Badges</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('admin.edit_config') }}">⚙️ Configuración</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('admin.manage_users') }}">👤 Usuarios</a></li>
+                    </ul>
+                </li>
+                {% endif %}
+
+                <li class="nav-item">
+                    <a class="nav-link text-danger" href="{{ url_for('auth.logout') }}">Salir</a>
+                </li>
+
+                <!-- 🔥 BOTÓN PARA CAMBIAR TEMA -->
+                <li class="nav-item">
+                    <button class="btn btn-outline-light ms-3" onclick="toggleTheme()">
+                        {% if current_user.theme == "light" %}
+                        🌙 Modo Oscuro
+                        {% else %}
+                        ☀️ Modo Claro
+                        {% endif %}
+                    </button>
+                </li>
 
                 {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('auth.login') }}">Iniciar sesión</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('auth.register') }}">Registrarse</a>
-                    </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('auth.login') }}">Iniciar sesión</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('auth.register') }}">Registrarse</a>
+                </li>
                 {% endif %}
             </ul>
         </div>

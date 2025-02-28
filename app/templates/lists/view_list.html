@@ -56,6 +56,16 @@
     <a href="{{ url_for('lists.delete_list', list_id=list_obj.id) }}" class="btn btn-danger mb-2">🗑 Eliminar Lista</a>
     {% endif %}
 
+    {% if current_user.is_authenticated and list_obj.user_id != current_user.id %}
+    <a href="{{ url_for('following.toggle_follow', list_id=list_obj.id) }}" class="btn btn-outline-primary">
+        {% if current_user.is_following(list_obj) %}
+            🔖 Siguiendo
+        {% else %}
+            📌 Seguir
+        {% endif %}
+    </a>
+{% endif %}
+
     <h4 class="mt-4">Ítems en la lista</h4>
     {% if list_obj.items %}
     <ul class="list-group">

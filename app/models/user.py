@@ -1,6 +1,7 @@
 from flask_login import UserMixin
 from app import db
 from app.models.badge import Badge
+from app.models.following_notifications import FollowingNotification
 from app.models.notification import Notification
 
 # Tabla intermedia para la relación Usuario - Badge
@@ -33,20 +34,57 @@ class User(UserMixin, db.Model):
 
     notifications = db.relationship("Notification", backref="user", lazy=True)
 
-    def unread_notifications_count(self):
+    following_notifications = db.relationship("FollowingNotification", backref="user", lazy=True) 
+ 
+
+    def unread_notifications(self):
         """Devuelve el número de notificaciones no leídas."""
+        from app.models.notification import Notification
         return Notification.query.filter_by(user_id=self.id, is_read=False).count()
 
+    def follow_list(self, list_obj):
+        """Seguir una lista."""
+        if list_obj not in self.following_lists:
+            self.following_lists.append(list_obj)
+            db.session.commit()
+
+    def unfollow_list(self, list_obj):
+        """Dejar de seguir una lista."""
+        if list_obj in self.following_lists:
+            self.following_lists.remove(list_obj)
+            db.session.commit()
+
+    def is_following(self, list_obj):
+        """Verifica si el usuario sigue una lista."""
+        return list_obj in self.following_lists
+
+    def unread_notifications_count(self):
+        """Devuelve el número de notificaciones generales no leídas."""
+        return Notification.query.filter_by(user_id=self.id, is_read=False).count()
+
+    def unread_following_notifications_count(self):
+        """Devuelve el número de notificaciones de listas seguidas no leídas."""
+        return FollowingNotification.query.filter_by(user_id=self.id, is_read=False).count()
+
     def get_notifications(self):
-        """Obtiene las notificaciones ordenadas por fecha."""
+        """Obtiene las notificaciones generales ordenadas por fecha."""
         return Notification.query.filter_by(user_id=self.id).order_by(Notification.timestamp.desc()).all()
 
+    def unread_following_notifications(self):
+        """Devuelve el número de notificaciones de listas seguidas no leídas."""
+        return FollowingNotification.query.filter_by(user_id=self.id, is_read=False).count()
+
+    def get_following_notifications(self):
+        """Obtiene las notificaciones de listas seguidas, ordenadas por fecha."""
+        return FollowingNotification.query.filter_by(user_id=self.id).order_by(FollowingNotification.timestamp.desc()).all()
+
+
     def add_notification(self, type, message):
-        """Añade una nueva notificación al usuario."""
+        """Añade una nueva notificación general al usuario."""
         notification = Notification(user_id=self.id, type=type, message=message)
         db.session.add(notification)
         db.session.commit()
-
+        
     def is_admin(self):
         """Verifica si el usuario es administrador."""
         return self.role == "admin"

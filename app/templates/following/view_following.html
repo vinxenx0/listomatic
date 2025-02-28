@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+
+{% block title %} Listas Seguidas {% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center">🔖 Listas en Seguimiento</h2>
+
+    {% if updated_lists %}
+    <h4 class="mt-4 text-danger d-flex justify-content-between align-items-center">
+        📌 Listas con Actualizaciones
+        <form action="{{ url_for('following.mark_all_following_as_read') }}" method="POST">
+            {{ form.hidden_tag() }}   
+            <button type="submit" class="btn btn-sm btn-primary">✅ Marcar Todas como Leídas</button>
+        </form>
+    </h4>
+    
+        <ul class="list-group">
+            {% for list in updated_lists %}
+                <li class="list-group-item fw-bold d-flex justify-content-between align-items-center">
+                    <div>
+                        <a href="{{ url_for('lists.view_list', list_id=list.id) }}">{{ list.name }}</a>
+                        <span class="text-muted d-block">{{ list.updated_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                    </div>
+                    <div>
+                        <form action="{{ url_for('following.mark_list_as_read', list_id=list.id) }}" method="POST" class="d-inline">
+                            {{ form.hidden_tag() }}  <!-- ✅ Token CSRF insertado correctamente -->
+                            <button type="submit" class="btn btn-sm btn-success">✅ Marcar como Leída</button>
+                        </form>
+                        <a href="{{ url_for('following.toggle_follow', list_id=list.id) }}" class="btn btn-sm btn-danger">❌ Dejar de seguir</a>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if normal_lists %}
+        <h4 class="mt-4">📁 Otras Listas Seguidas</h4>
+        <ul class="list-group">
+            {% for list in normal_lists %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <a href="{{ url_for('lists.view_list', list_id=list.id) }}">{{ list.name }}</a>
+                        <span class="text-muted d-block">{{ list.updated_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                    </div>
+                    <a href="{{ url_for('following.toggle_follow', list_id=list.id) }}" class="btn btn-sm btn-danger">❌ Dejar de seguir</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if not updated_lists and not normal_lists %}
+        <p class="text-muted text-center">No sigues ninguna lista.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -51,6 +51,7 @@ def create_app():
     from app.models.config import AppConfig
     from app.models.list import likes_table
     from app.models.comment import Comment
+    from app.models.notification import Notification
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -66,8 +67,9 @@ def create_app():
     from app.routes.admin import admin_bp
     from app.routes.admin_badges import admin_badges_bp
     from app.routes.notifications import notifications_bp
+    from app.routes.following import following_bp
 
-
+    app.register_blueprint(following_bp, url_prefix="/following")
     app.register_blueprint(comments_bp, url_prefix="/comments")
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(lists_bp, url_prefix="/lists")
@@ -84,7 +86,6 @@ def create_app():
     def init_db():
         """Inicializa la base de datos con datos de ejemplo si no existen."""
         with app.app_context():
-            """Carga datos de prueba en la base de datos."""
             db.create_all()
 
             # ✅ Configuración global
@@ -120,23 +121,32 @@ def create_app():
                             role="user",
                             password=generate_password_hash("user123", method="pbkdf2:sha256"))
 
-                db.session.add_all([admin, user1, user2])
+                user3 = User(username="user3",
+                            email="user3@example.com",
+                            role="user",
+                            password=generate_password_hash("user123", method="pbkdf2:sha256"))
+
+                db.session.add_all([admin, user1, user2, user3])
                 db.session.commit()
 
                 print("✅ Usuarios creados correctamente")
 
-            # ✅ Crear listas de prueba
+            # ✅ Obtener usuarios y categorías
             admin = User.query.filter_by(username="admin").first()
             user1 = User.query.filter_by(username="user1").first()
             user2 = User.query.filter_by(username="user2").first()
+            user3 = User.query.filter_by(username="user3").first()
 
             cat_trabajo = Category.query.filter_by(name="Trabajo").first()
             cat_ocio = Category.query.filter_by(name="Ocio").first()
+            cat_compras = Category.query.filter_by(name="Compras").first()
 
+            # ✅ Crear listas de prueba
             listas = [
                 List(name="Tareas pendientes", user_id=admin.id, is_public=True, category=cat_trabajo),
                 List(name="Películas por ver", user_id=user1.id, is_public=True, category=cat_ocio),
-                List(name="Lista de compras", user_id=user2.id, is_public=True, category=Category.query.filter_by(name="Compras").first()),
+                List(name="Lista de compras", user_id=user2.id, is_public=True, category=cat_compras),
+                List(name="Ideas para negocio", user_id=user3.id, is_public=True, category=cat_trabajo),
             ]
 
             db.session.add_all(listas)
@@ -151,6 +161,7 @@ def create_app():
                 Item(content="Ver 'Inception'", list_id=listas[1].id, image_url="uploads/default_thumbnail.png"),
                 Item(content="Comprar leche", list_id=listas[2].id, image_url="uploads/default_thumbnail.png"),
                 Item(content="Comprar pan", list_id=listas[2].id, image_url="uploads/default_thumbnail.png"),
+                Item(content="Analizar mercado de apps", list_id=listas[3].id, image_url="uploads/default_thumbnail.png"),
             ]
 
             db.session.add_all(items)
@@ -163,6 +174,8 @@ def create_app():
                 Comment(content="¡Buena lista!", user_id=user1.id, list_id=listas[0].id),
                 Comment(content="Agrega más tareas", user_id=user2.id, list_id=listas[0].id),
                 Comment(content="¡Esa película es genial!", user_id=admin.id, list_id=listas[1].id),
+                Comment(content="Añadir frutas a la lista de compras", user_id=user3.id, list_id=listas[2].id),
+                Comment(content="Buena idea para un negocio 🚀", user_id=user1.id, list_id=listas[3].id),
             ]
 
             db.session.add_all(comments)
@@ -175,13 +188,43 @@ def create_app():
                 {"user_id": user1.id, "list_id": listas[0].id, "is_like": True},
                 {"user_id": user2.id, "list_id": listas[0].id, "is_like": False},
                 {"user_id": admin.id, "list_id": listas[1].id, "is_like": True},
+                {"user_id": user3.id, "list_id": listas[2].id, "is_like": True},
+                {"user_id": user1.id, "list_id": listas[3].id, "is_like": True},
             ]
 
             db.session.execute(likes_table.insert(), likes)
             db.session.commit()
 
             print("✅ Likes y dislikes añadidos")
-            
+
+            # ✅ Seguir listas
+            user1.follow_list(listas[0])  # user1 sigue la lista de "Tareas pendientes" de admin
+            user2.follow_list(listas[1])  # user2 sigue la lista de "Películas por ver" de user1
+            user3.follow_list(listas[2])  # user3 sigue la lista de "Lista de compras" de user2
+            admin.follow_list(listas[3])  # admin sigue la lista de "Ideas para negocio" de user3
+
+            db.session.commit()
+
+            print("✅ Seguimiento de listas configurado")
+
+            # ✅ Crear notificaciones de prueba
+            notifications = [
+                Notification(user_id=admin.id, type="like", message="📌 user1 ha dado like a tu lista 'Tareas pendientes'."),
+                Notification(user_id=admin.id, type="comment", message="💬 user2 ha comentado en tu lista 'Tareas pendientes'."),
+                Notification(user_id=user1.id, type="like", message="📌 admin ha dado like a tu lista 'Películas por ver'."),
+                Notification(user_id=user2.id, type="comment", message="💬 user3 ha comentado en tu lista 'Lista de compras'."),
+                Notification(user_id=user3.id, type="like", message="📌 user1 ha dado like a tu lista 'Ideas para negocio'."),
+                Notification(user_id=user1.id, type="update", message="📌 La lista 'Tareas pendientes' que sigues ha sido actualizada."),
+                Notification(user_id=user2.id, type="update", message="📌 La lista 'Películas por ver' que sigues ha sido actualizada."),
+                Notification(user_id=user3.id, type="update", message="📌 La lista 'Lista de compras' que sigues ha sido actualizada."),
+                Notification(user_id=admin.id, type="update", message="📌 La lista 'Ideas para negocio' que sigues ha sido actualizada."),
+            ]
+
+            db.session.add_all(notifications)
+            db.session.commit()
+
+            print("✅ Notificaciones creadas correctamente")
+
             db.session.commit()
             print("✅ Base de datos inicializada correctamente")
 

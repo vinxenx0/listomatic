@@ -1,7 +1,8 @@
 sudo apt install python-pytest
 
 pip install python-dotenv
-
+# pymysql
+# gunicorn
 pip install flask flask-sqlalchemy flask-login flask-wtf flask-migrate bootstrap-flask email_validator pytest
 
 

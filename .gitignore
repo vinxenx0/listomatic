@@ -3,6 +3,8 @@
 migrations/
 instance/
 .env
+#tests/
+
 
 
 

@@ -2,3 +2,23 @@
 # timestamp para el usuario y todos los campos sociales
 # categorias en dashboard de admin y editar categorias hay que acdtualiar con las dinamicas
 # revisar los timestamp y las fechas de update de las listas
+# crear una versión dokerizada
+# subirlo a un dominio
+
+# url para compartir una lista o grupo de listas o perfil
+# perfil publico?
+# estado "en moderación" para las listas
+# mail de activación 
+# en el perfil del usuario que las categorias solo muestren sus listas
+
+
+# los robots seo para evitar duplicados
+
+# añadir agregadores automaticos que creen listas (discogs, spotify)
+
+# crear el backend para la API basica
+# tema retro / tema bootstrap
+
+# mostrar correo de perfil?
+
+# modo producción / modo devel (alternat sql con mysql)

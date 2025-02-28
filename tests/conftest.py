@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+
 import pytest
 import os
 from app import create_app, db
@@ -10,7 +13,8 @@ def test_db_path():
     """Define la ruta de la base de datos de pruebas en un archivo separado."""
     test_db = os.path.abspath(
         os.path.join(os.path.dirname(__file__), "test.db"))
-    print(f"⚠️  Creando base de datos de prueba en: {test_db}")
+  
+
     return test_db
 
 
@@ -24,13 +28,13 @@ def app(test_db_path):
     app.config.update({
         "TESTING": True,
         "SQLALCHEMY_DATABASE_URI":
-        f"sqlite:///{test_db_path}",  # ✅ Forzar test.db
+        f"sqlite:///{test_db_path}",   
         "WTF_CSRF_ENABLED": False,
         "SQLALCHEMY_TRACK_MODIFICATIONS": False
     })
 
     print(
-        f"✅ Base de datos configurada: {app.config['SQLALCHEMY_DATABASE_URI']}"
+        f"Base de datos configurada: {app.config['SQLALCHEMY_DATABASE_URI']}"
     )
 
     return app
@@ -57,7 +61,7 @@ def test_user(app_context):
     """Crea un usuario de prueba y lo devuelve con una sesión activa."""
     user = db.session.query(User).filter_by(email="test@example.com").first()
 
-    if not user:  # ✅ Solo lo creamos si no existe
+    if not user:  
         user = User(username="testuser",
                     email="test@example.com",
                     password=generate_password_hash("testpassword"))

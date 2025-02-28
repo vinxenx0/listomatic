@@ -97,6 +97,7 @@ def create_list():
             new_list.tags.append(tag)
 
         db.session.commit()
+        current_user.add_score(1)
         flash("Lista creada exitosamente", "success")
         return redirect(url_for("lists.dashboard"))
 
@@ -264,8 +265,6 @@ def like_list(list_id, action):
                                                        list_id=list_id,
                                                        is_like=is_like))
         db.session.commit()
-        current_user.add_score(0.1)
-        
         if list_obj.owner.id != current_user.id:
             action_text = "le ha dado like" if is_like else "le ha dado dislike"
             list_obj.owner.add_notification("like", f"{current_user.username} {action_text} a tu lista '{list_obj.name}'.")

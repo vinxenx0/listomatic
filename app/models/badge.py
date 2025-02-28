@@ -9,3 +9,8 @@ class Badge(db.Model):
 
     def __repr__(self):
         return f"<Badge {self.name} ({self.min_score} puntos)>"
+
+    @staticmethod
+    def get_all():
+        """Devuelve todos los badges ordenados por puntuación mínima."""
+        return Badge.query.order_by(Badge.min_score).all()

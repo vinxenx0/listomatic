@@ -5,10 +5,11 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_bootstrap import Bootstrap5
 from werkzeug.security import generate_password_hash
-from config import Config
+from config import Config, DevelopmentConfig
 from sqlalchemy.sql import func
 from flask_wtf.csrf import CSRFProtect
 import os
+from config import config_dict
 
 # Definir la carpeta de subida de imágenes
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))  # Ruta base del proyecto
@@ -25,8 +26,16 @@ csrf = CSRFProtect()
 
 def create_app():
 
+    """Crea y configura la aplicación Flask según el entorno."""
+    
+    # Detectar el entorno desde la variable de entorno FLASK_ENV
+    env = os.getenv("FLASK_ENV", "development")
+    app_config = config_dict.get(env, DevelopmentConfig)
+
+
     app = Flask(__name__, static_folder="static")
-    app.config.from_object(Config)
+    app.config.from_object(app_config)
+    #app.config.from_object(Config)
     app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
     db.init_app(app)
@@ -40,6 +49,8 @@ def create_app():
     from app.models.item import Item
     from app.models.category import Category
     from app.models.config import AppConfig
+    from app.models.list import likes_table
+    from app.models.comment import Comment
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -69,72 +80,104 @@ def create_app():
     def init_db():
         """Inicializa la base de datos con datos de ejemplo si no existen."""
         with app.app_context():
+            """Carga datos de prueba en la base de datos."""
             db.create_all()
 
-            # ✅ Crear configuración global si no existe
+            # ✅ Configuración global
             if not AppConfig.query.first():
                 config = AppConfig()
                 db.session.add(config)
 
-            # ✅ Crear categorías por defecto si no existen
+            # ✅ Crear categorías
             default_categories = ["Trabajo", "Personal", "Compras", "Estudio", "Ocio"]
             for name in default_categories:
                 if not Category.query.filter_by(name=name).first():
                     db.session.add(Category(name=name))
-
+                    
             db.session.commit()
+            db.session.flush()
+
             print("✅ Categorías creadas correctamente")
 
-            # ✅ Crear usuarios de ejemplo
+            # ✅ Crear usuarios de prueba
             if not User.query.first():
                 admin = User(username="admin",
-                             email="admin@example.com",
-                             role="admin",
-                             password=generate_password_hash(
-                                 "admin123", method="pbkdf2:sha256"))
-                user = User(username="usuario",
-                            email="usuario@example.com",
+                            email="admin@example.com",
+                            role="admin",
+                            password=generate_password_hash("admin123", method="pbkdf2:sha256"))
+                
+                user1 = User(username="user1",
+                            email="user1@example.com",
                             role="user",
-                            password=generate_password_hash(
-                                "user123", method="pbkdf2:sha256"))
-                db.session.add_all([admin, user])
+                            password=generate_password_hash("user123", method="pbkdf2:sha256"))
+
+                user2 = User(username="user2",
+                            email="user2@example.com",
+                            role="user",
+                            password=generate_password_hash("user123", method="pbkdf2:sha256"))
+
+                db.session.add_all([admin, user1, user2])
                 db.session.commit()
 
-                category_compras = Category.query.filter_by(name="Compras").first()
-                category_ocio = Category.query.filter_by(name="Ocio").first()
+                print("✅ Usuarios creados correctamente")
 
-                listas_admin = [
-                    List(name="Lista de Compras",
-                         user_id=admin.id,
-                         is_public=True,
-                         category_id=category_compras.id),
-                    List(name="Películas por Ver",
-                         user_id=admin.id,
-                         is_public=True,
-                         category_id=category_ocio.id)
-                ]
+            # ✅ Crear listas de prueba
+            admin = User.query.filter_by(username="admin").first()
+            user1 = User.query.filter_by(username="user1").first()
+            user2 = User.query.filter_by(username="user2").first()
 
-                db.session.add_all(listas_admin)
-                db.session.commit()
+            cat_trabajo = Category.query.filter_by(name="Trabajo").first()
+            cat_ocio = Category.query.filter_by(name="Ocio").first()
 
-                # ✅ Añadir ítems a las listas
-                items = [
-                    Item(content="Leche",
-                         list_id=listas_admin[0].id,
-                         image_url="uploads/default_thumbnail.png"),
-                    Item(content="Pan",
-                         list_id=listas_admin[0].id,
-                         image_url="uploads/default_thumbnail.png"),
-                    Item(content="Interestelar",
-                         list_id=listas_admin[1].id,
-                         image_url="uploads/default_thumbnail.png"),
-                    Item(content="El Padrino",
-                         list_id=listas_admin[1].id,
-                         image_url="uploads/default_thumbnail.png")
-                ]
-                db.session.add_all(items)
-                db.session.commit()
+            listas = [
+                List(name="Tareas pendientes", user_id=admin.id, is_public=True, category=cat_trabajo),
+                List(name="Películas por ver", user_id=user1.id, is_public=True, category=cat_ocio),
+                List(name="Lista de compras", user_id=user2.id, is_public=True, category=Category.query.filter_by(name="Compras").first()),
+            ]
 
+            db.session.add_all(listas)
+            db.session.commit()
+
+            print("✅ Listas creadas correctamente")
+
+            # ✅ Crear ítems en las listas
+            items = [
+                Item(content="Hacer informe mensual", list_id=listas[0].id, image_url="uploads/default_thumbnail.png"),
+                Item(content="Revisar correos", list_id=listas[0].id, image_url="uploads/default_thumbnail.png"),
+                Item(content="Ver 'Inception'", list_id=listas[1].id, image_url="uploads/default_thumbnail.png"),
+                Item(content="Comprar leche", list_id=listas[2].id, image_url="uploads/default_thumbnail.png"),
+                Item(content="Comprar pan", list_id=listas[2].id, image_url="uploads/default_thumbnail.png"),
+            ]
+
+            db.session.add_all(items)
+            db.session.commit()
+
+            print("✅ Ítems creados correctamente")
+
+            # ✅ Crear comentarios en listas
+            comments = [
+                Comment(content="¡Buena lista!", user_id=user1.id, list_id=listas[0].id),
+                Comment(content="Agrega más tareas", user_id=user2.id, list_id=listas[0].id),
+                Comment(content="¡Esa película es genial!", user_id=admin.id, list_id=listas[1].id),
+            ]
+
+            db.session.add_all(comments)
+            db.session.commit()
+
+            print("✅ Comentarios creados correctamente")
+
+            # ✅ Añadir likes y dislikes
+            likes = [
+                {"user_id": user1.id, "list_id": listas[0].id, "is_like": True},
+                {"user_id": user2.id, "list_id": listas[0].id, "is_like": False},
+                {"user_id": admin.id, "list_id": listas[1].id, "is_like": True},
+            ]
+
+            db.session.execute(likes_table.insert(), likes)
+            db.session.commit()
+
+            print("✅ Likes y dislikes añadidos")
+            
             db.session.commit()
             print("✅ Base de datos inicializada correctamente")
 

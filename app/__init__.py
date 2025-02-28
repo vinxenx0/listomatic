@@ -65,6 +65,8 @@ def create_app():
     from app.routes.comments import comments_bp
     from app.routes.admin import admin_bp
     from app.routes.admin_badges import admin_badges_bp
+    from app.routes.notifications import notifications_bp
+
 
     app.register_blueprint(comments_bp, url_prefix="/comments")
     app.register_blueprint(auth_bp, url_prefix="/auth")
@@ -75,6 +77,8 @@ def create_app():
     app.register_blueprint(home_bp)
     app.register_blueprint(admin_bp, url_prefix="/admin")
     app.register_blueprint(admin_badges_bp, url_prefix="/admin/badges")
+    app.register_blueprint(notifications_bp, url_prefix="/notifications")
+
 
     @app.cli.command("init-db")
     def init_db():

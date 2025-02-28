@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block title %} Notificaciones {% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center">🔔 Mis Notificaciones</h2>
+
+    {% if notifications %}
+        <ul class="list-group">
+            {% for notification in notifications %}
+                <li class="list-group-item {% if not notification.is_read %}fw-bold{% endif %}">
+                    {{ notification.message }} 
+                    <span class="text-muted float-end">{{ notification.timestamp.strftime('%d/%m/%Y %H:%M') }}</span>
+                    <a href="{{ url_for('notifications.mark_as_read', notification_id=notification.id) }}" class="btn btn-sm btn-primary ms-2">✔ Marcar como leída</a>
+                </li>
+            {% endfor %}
+        </ul>
+        <a href="{{ url_for('notifications.clear_notifications') }}" class="btn btn-danger mt-3">🗑 Borrar todas</a>
+    {% else %}
+        <p class="text-muted text-center">No tienes notificaciones pendientes.</p>
+    {% endif %}
+</div>
+{% endblock %}

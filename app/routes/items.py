@@ -96,6 +96,10 @@ def rate_item(item_id):
         db.session.execute(item_ratings.insert().values(
             user_id=current_user.id, item_id=item_id, rating=rating))
 
+        if item.list.owner.id != current_user.id:
+            item.list.owner.add_notification("rating", f"{current_user.username} valoró un ítem en tu lista '{item.list.name}'.")
+
+
     db.session.commit()
     flash("Calificación guardada con éxito!", "success")
     return redirect(url_for("lists.view_list", list_id=item.list_id))

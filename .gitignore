@@ -2,7 +2,10 @@
 migrations/
 instance/
 .env
-.ssl/
+.ssl
+.pytest_cache
+.venv
+.tests/
 
 
 

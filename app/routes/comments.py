@@ -26,6 +26,11 @@ def add_comment(list_id):
         db.session.add(new_comment)
         db.session.commit()
         current_user.add_score(0.5)
+
+        if list_obj.owner.id != current_user.id:
+            list_obj.owner.add_notification("comment", f"{current_user.username} comentó en tu lista '{list_obj.name}'.")
+
+  
         flash("Comentario agregado con éxito!", "success")
 
     return redirect(url_for("lists.view_list", list_id=list_id))

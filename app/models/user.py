@@ -1,6 +1,7 @@
 from flask_login import UserMixin
 from app import db
 from app.models.badge import Badge
+from app.models.notification import Notification
 
 # Tabla intermedia para la relación Usuario - Badge
 user_badges = db.Table(
@@ -29,6 +30,22 @@ class User(UserMixin, db.Model):
 
     lists = db.relationship("List", backref="owner", lazy=True)
     badges = db.relationship("Badge", secondary=user_badges, backref="users")
+
+    notifications = db.relationship("Notification", backref="user", lazy=True)
+
+    def unread_notifications_count(self):
+        """Devuelve el número de notificaciones no leídas."""
+        return Notification.query.filter_by(user_id=self.id, is_read=False).count()
+
+    def get_notifications(self):
+        """Obtiene las notificaciones ordenadas por fecha."""
+        return Notification.query.filter_by(user_id=self.id).order_by(Notification.timestamp.desc()).all()
+
+    def add_notification(self, type, message):
+        """Añade una nueva notificación al usuario."""
+        notification = Notification(user_id=self.id, type=type, message=message)
+        db.session.add(notification)
+        db.session.commit()
 
     def is_admin(self):
         """Verifica si el usuario es administrador."""

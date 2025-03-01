@@ -36,6 +36,33 @@
     </div>
 </div>
 
+<!-- 🔥 Sección de Actividad Reciente -->
+<div class="container mt-5">
+    <h2 class="text-center">📢 Actividad Reciente</h2>
+    <p class="text-muted text-center">Lo que está pasando en la comunidad</p>
+
+    {% if recent_activity %}
+    <ul class="list-group">
+        {% for event in recent_activity %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                <strong>{{ event.message }}</strong><br>
+                <small class="text-muted">{{ event.timestamp.strftime('%d/%m/%Y %H:%M') }}</small>
+            </div>
+            {% if event.list_id %}
+            <a href="{{ url_for('lists.view_list', list_id=event.list_id) }}" class="btn btn-outline-primary btn-sm">
+                📄 Ver Lista
+            </a>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-center text-muted">No hay actividad reciente.</p>
+    {% endif %}
+</div>
+
+
 <!-- 🎯 Sección de Descubrimiento -->
 <div class="container mt-5">
     <h2 class="text-center">🔥 Tendencias</h2>

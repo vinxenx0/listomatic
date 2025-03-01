@@ -1,6 +1,7 @@
 from flask import Blueprint, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from app import db
+from app.models.activity import ActivityLog
 from app.models.comment import Comment
 from app.forms.comment_forms import CommentForm
 
@@ -27,6 +28,11 @@ def add_comment(list_id):
         db.session.commit()
         current_user.add_score(0.5)
 
+        log = ActivityLog(user_id=current_user.id, list_id=list_id, action="comment",
+                          message=f"💬 {current_user.username} comentó en '{list_obj.name}': \"{form.content.data[:50]}...\"")
+
+        db.session.add(log)
+        db.session.commit()
         if list_obj.owner.id != current_user.id:
             list_obj.owner.add_notification("comment", f"{current_user.username} comentó en tu lista '{list_obj.name}'.")
 

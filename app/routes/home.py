@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template
 from app import db
+from app.models.activity import ActivityLog
 from app.models.category import Category
 from app.models.comment import Comment
 from app.models.list import List, likes_table
@@ -45,6 +46,7 @@ def home():
     excluded_ids = {l.id for l in trending_lists + latest_lists}
     other_lists = List.query.filter(List.is_public == True, ~List.id.in_(excluded_ids)).order_by(List.timestamp.desc()).all()
 
+    recent_activity = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).limit(100).all()
 
 
     public_lists = List.query.filter_by(is_public=True).order_by(List.timestamp.desc()).limit(10).all()
@@ -82,4 +84,5 @@ def home():
                            other_lists=other_lists,
                            category_counts=category_counts,
                            tag_counts=tag_counts,
+                           recent_activity=recent_activity,
                            form=form)

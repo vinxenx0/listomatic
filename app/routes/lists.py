@@ -6,6 +6,7 @@ from sqlalchemy import func
 from werkzeug.utils import secure_filename
 from app import db
 from flask import current_app
+from app.models.activity import ActivityLog
 from app.models.category import Category
 from app.models.list import List, likes_table
 from app.models.item import item_ratings
@@ -93,9 +94,13 @@ def create_list():
 
         db.session.add(new_list)
 
+        log = ActivityLog(user_id=current_user.id, list_id=new_list.id, action="create_list",
+                          message=f"📝 {current_user.username} creó la lista '{new_list.name}'.")
+  
+
         current_user.add_score(1)
 
-        # Procesar etiquetas
+        # Procesar 
         if form.tags.data is None or not isinstance(form.tags.data, str):
             form.tags.data = ""
 
@@ -284,6 +289,14 @@ def like_list(list_id, action):
         if list_obj.owner.id != current_user.id:
             action_text = "le ha dado like" if is_like else "le ha dado dislike"
             list_obj.owner.add_notification("like", f"{current_user.username} {action_text} a tu lista '{list_obj.name}'.")
+            
+        log = ActivityLog(user_id=current_user.id, list_id=list_id, action=action,
+                          message=f"{action_text} en la lista '{list_obj.name}'")
+
+        db.session.add(log)
+        db.session.commit()
+        
+       
 
         flash("Tu voto ha sido registrado", "success")
 

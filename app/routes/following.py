@@ -1,6 +1,7 @@
 from flask import Blueprint, redirect, render_template, url_for, flash
 from flask_login import login_required, current_user
 from app import db
+from app.models.activity import ActivityLog
 from app.models.following_notifications import FollowingNotification
 from app.models.list import List
 from flask_wtf import FlaskForm
@@ -23,10 +24,17 @@ def toggle_follow(list_id):
 
     if current_user.is_following(list_obj):
         current_user.unfollow_list(list_obj)
+        action_text = "❌ dejó de seguir"
         flash("Has dejado de seguir la lista.", "info")
     else:
         current_user.follow_list(list_obj)
+        action_text = "❤️ comenzó a seguir"
         flash("Ahora sigues esta lista.", "success")
+
+    log = ActivityLog(user_id=current_user.id, list_id=list_id, action="follow",
+                          message=f"{action_text} la lista '{list_obj.name}'.")
+    db.session.add(log)
+    db.session.commit()
 
     return redirect(url_for("lists.view_list", list_id=list_id))
 

@@ -14,9 +14,10 @@
 <body class="bg-body text-body">
 
     {% include 'components/navbar.html' %}
+    {% include 'components/messages.html' %}
 
     <div class="container mt-4 content">
-        {% include 'components/messages.html' %}
+        
         {% block content %}{% endblock %}
     </div>
 
@@ -29,6 +30,19 @@
             fetch("{{ url_for('users.toggle_theme') }}").then(() => location.reload());
         }
     </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            setTimeout(function () {
+                document.querySelectorAll(".flash-message").forEach(msg => {
+                    msg.classList.add("fade");
+                    setTimeout(() => msg.remove(), 500);
+                });
+            }, 5000);
+        });
+    </script>
+
+
 
 </body>
 

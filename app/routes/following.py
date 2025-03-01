@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect, render_template, url_for, flash
+from flask import Blueprint, jsonify, redirect, render_template, url_for, flash
 from flask_login import login_required, current_user
 from app import db
 from app.models.activity import ActivityLog
@@ -6,6 +6,7 @@ from app.models.following_notifications import FollowingNotification
 from app.models.list import List
 from flask_wtf import FlaskForm
 from wtforms import HiddenField
+from flask import jsonify, flash, get_flashed_messages
 
 class EmptyForm(FlaskForm):
     pass
@@ -91,3 +92,37 @@ def view_following_notifications():
     
     return render_template("following/notifications.html", notifications=notifications)
 
+
+
+@following_bp.route("/toggle_ajax/<int:list_id>", methods=["POST"])
+@login_required
+def toggle_follow_ajax(list_id):
+    """Seguir o dejar de seguir una lista y devolver JSON con el nuevo estado."""
+    list_obj = List.query.get_or_404(list_id)
+
+    if list_obj.user_id == current_user.id:
+        flash("No puedes seguir tu propia lista.", "warning")
+        return jsonify({"success": False, "messages": get_flashed_messages(with_categories=True)})
+
+    following = list_obj in current_user.following_lists
+
+    if following:
+        current_user.unfollow_list(list_obj)
+        action_text = "❌ dejaste de seguir"
+        flash("Has dejado de seguir la lista.", "info")
+    else:
+        current_user.follow_list(list_obj)
+        action_text = "❤️ comenzaste a seguir"
+        flash("Ahora sigues esta lista.", "success")
+
+    # ✅ Guardar en el log de actividad
+    log = ActivityLog(user_id=current_user.id, list_id=list_id, action="follow",
+                      message=f"{action_text} la lista '{list_obj.name}'.")
+    db.session.add(log)
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "following": not following,  # 🔥 Devolvemos el estado actualizado
+        "messages": get_flashed_messages(with_categories=True)
+    })

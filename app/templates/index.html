@@ -4,6 +4,9 @@
 
 {% block content %}
 
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<script src="{{ url_for('static', filename='js/actions.js') }}" defer></script>
+
 <!-- ✅ Llamado a la acción para nuevos usuarios -->
 {% if not current_user.is_authenticated %}
 <div class="text-center mt-5">
@@ -36,104 +39,70 @@
     </div>
 </div>
 
-<!-- 🔥 Sección de Actividad Reciente -->
-<div class="container mt-5">
-    <h2 class="text-center">📢 Actividad Reciente</h2>
-    <p class="text-muted text-center">Lo que está pasando en la comunidad</p>
-
-    {% if recent_activity %}
-    <ul class="list-group">
-        {% for event in recent_activity %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-            <div>
-                <strong>{{ event.message }}</strong><br>
-                <small class="text-muted">{{ event.timestamp.strftime('%d/%m/%Y %H:%M') }}</small>
-            </div>
-            {% if event.list_id %}
-            <a href="{{ url_for('lists.view_list', list_id=event.list_id) }}" class="btn btn-outline-primary btn-sm">
-                📄 Ver Lista
-            </a>
-            {% endif %}
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p class="text-center text-muted">No hay actividad reciente.</p>
-    {% endif %}
-</div>
-
-
-<!-- 🎯 Sección de Descubrimiento -->
+<!-- 🎯 Listas en Tendencia -->
 <div class="container mt-5">
     <h2 class="text-center">🔥 Tendencias</h2>
     <p class="text-muted text-center">Las listas más populares ahora mismo</p>
 
     {% if trending_lists %}
-    {% for list in trending_lists %}
-    <div class="card shadow-sm mb-3">
-        <div class="card-body d-flex justify-content-between align-items-center">
+    <ul class="list-group shadow-sm">
+        {% for list in trending_lists %}
+        <li class="list-group-item d-flex justify-content-between align-items-center border-bottom py-3">
+
+            <!-- 🖼 Foto + Nombre -->
             <div class="d-flex align-items-center">
                 <img src="{{ url_for('static', filename=list.image_url if list.image_url else 'default_thumbnail.png') }}"
                     class="rounded-circle me-3" width="50" alt="Imagen de la lista">
                 <div>
                     <h5 class="mb-0">
-                        <a href="{{ url_for('lists.view_list', list_id=list.id) }}" class="text-dark text-decoration-none">
+                        <a href="{{ url_for('lists.view_list', list_id=list.id) }}"
+                            class="text-dark text-decoration-none fw-bold">
                             {{ list.name }}
                         </a>
                     </h5>
-                    <div class="d-flex align-items-center">
-                        <small class="text-muted me-2">
-                            <i class="bi bi-folder-fill text-primary"></i> {{ list.category.name if list.category else 'Sin categoría' }}
-                        </small>
-                        {% for tag in list.tags %}
-                        <a href="{{ url_for('lists.lists_by_tag', tag_name=tag.name) }}"
-                            class="badge bg-secondary text-decoration-none me-1">
-                            #{{ tag.name }}
-                        </a>
-                        {% endfor %}
-                    </div>
+                    <small class="text-muted">
+                        <i class="bi bi-folder-fill text-primary"></i> {{ list.category.name if list.category else 'Sin categoría' }}
+                    </small>
                 </div>
             </div>
 
-            <!-- 🔹 Botonera de interacciones -->
-            <div class="d-flex align-items-center text-muted">
-                <form action="{{ url_for('lists.like_list', list_id=list.id, action='like') }}" method="POST" class="d-inline">
-                    {{ form.hidden_tag() }}
-                    <button type="submit" class="btn btn-outline-success btn-sm me-2">
-                        <i class="bi bi-hand-thumbs-up-fill"></i> {{ list.count_likes() }}
-                    </button>
-                </form>
+            <!-- 🔹 Botonera -->
+            <div class="d-flex align-items-center">
 
-                <form action="{{ url_for('lists.like_list', list_id=list.id, action='dislike') }}" method="POST" class="d-inline">
-                    {{ form.hidden_tag() }}
-                    <button type="submit" class="btn btn-outline-danger btn-sm me-2">
-                        <i class="bi bi-hand-thumbs-down-fill"></i> {{ list.count_dislikes() }}
-                    </button>
-                </form>
+                <!-- 👍 Like -->
+                <button class="btn btn-outline-success btn-sm me-2 like-btn" data-list-id="{{ list.id }}"
+                    data-action="like">
+                    <i class="bi bi-hand-thumbs-up-fill"></i> <span class="like-count">{{ list.count_likes() }}</span>
+                </button>
 
-                <span class="me-2 text-info">
+                <!-- 👎 Dislike -->
+                <button class="btn btn-outline-danger btn-sm me-2 like-btn" data-list-id="{{ list.id }}"
+                    data-action="dislike">
+                    <i class="bi bi-hand-thumbs-down-fill"></i> <span class="dislike-count">{{ list.count_dislikes() }}</span>
+                </button>
+
+                <!-- 📌 Seguir Lista -->
+                <button class="btn btn-outline-primary btn-sm follow-btn" data-list-id="{{ list.id }}"
+                    data-action="following">
+                    <i class="bi {% if list in current_user.following_lists %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                </button>
+
+                <!-- 🔹 Ítems y Comentarios -->
+                <span class="ms-3 text-info">
                     <i class="bi bi-list-ul"></i> {{ list.items|length }}
                 </span>
-
-                <span class="me-2 text-warning">
+                <span class="ms-3 text-warning">
                     <i class="bi bi-chat-fill"></i> {{ list.count_comments() }}
                 </span>
 
-                <form action="{{ url_for('following.toggle_follow', list_id=list.id) }}" method="POST" class="d-inline">
-                    {{ form.hidden_tag() }}
-                    <button type="submit" class="btn btn-outline-primary btn-sm">
-                        <i class="bi {% if list in current_user.following_lists %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
-                    </button>
-                </form>
             </div>
-        </div>
-    </div>
-    {% endfor %}
+        </li>
+        {% endfor %}
+    </ul>
     {% else %}
-    <p class="text-center text-muted">No hay listas en tendencia aún. ¡Sé el primero en crear una! 🚀</p>
+    <p class="text-center text-muted">No hay listas en tendencia aún. 🚀</p>
     {% endif %}
 </div>
-
 
 <!-- ✅ Sección de Últimas Listas -->
 <div class="container mt-5">
@@ -141,15 +110,18 @@
     <p class="text-muted text-center">Nuevas listas creadas recientemente</p>
 
     {% if public_lists %}
-    {% for list in public_lists %}
-    <div class="card shadow-sm mb-3">
-        <div class="card-body d-flex justify-content-between align-items-center">
+    <ul class="list-group shadow-sm">
+        {% for list in public_lists %}
+        <li class="list-group-item d-flex justify-content-between align-items-center border-bottom py-3">
+
+            <!-- 🖼 Foto + Nombre -->
             <div class="d-flex align-items-center">
                 <img src="{{ url_for('static', filename=list.image_url if list.image_url else 'default_thumbnail.png') }}"
                     class="rounded-circle me-3" width="50" alt="Imagen de la lista">
                 <div>
                     <h5 class="mb-0">
-                        <a href="{{ url_for('lists.view_list', list_id=list.id) }}" class="text-dark text-decoration-none">
+                        <a href="{{ url_for('lists.view_list', list_id=list.id) }}"
+                            class="text-dark text-decoration-none fw-bold">
                             {{ list.name }}
                         </a>
                     </h5>
@@ -157,85 +129,41 @@
             </div>
 
             <!-- 🔹 Botonera -->
-            <div class="d-flex align-items-center text-muted">
-                <form action="{{ url_for('lists.like_list', list_id=list.id, action='like') }}" method="POST" class="d-inline">
-                    {{ form.hidden_tag() }}
-                    <button type="submit" class="btn btn-outline-success btn-sm me-2">
-                        <i class="bi bi-hand-thumbs-up-fill"></i> {{ list.count_likes() }}
-                    </button>
-                </form>
+            <div class="d-flex align-items-center">
 
-                <form action="{{ url_for('lists.like_list', list_id=list.id, action='dislike') }}" method="POST" class="d-inline">
-                    {{ form.hidden_tag() }}
-                    <button type="submit" class="btn btn-outline-danger btn-sm me-2">
-                        <i class="bi bi-hand-thumbs-down-fill"></i> {{ list.count_dislikes() }}
-                    </button>
-                </form>
+                <!-- 👍 Like -->
+                <button class="btn btn-outline-success btn-sm me-2 like-btn" data-list-id="{{ list.id }}"
+                    data-action="like">
+                    <i class="bi bi-hand-thumbs-up-fill"></i> <span class="like-count">{{ list.count_likes() }}</span>
+                </button>
 
-                <form action="{{ url_for('following.toggle_follow', list_id=list.id) }}" method="POST" class="d-inline">
-                    {{ form.hidden_tag() }}
-                    <button type="submit" class="btn btn-outline-primary btn-sm">
-                        <i class="bi {% if list in current_user.following_lists %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
-                    </button>
-                </form>
+                <!-- 👎 Dislike -->
+                <button class="btn btn-outline-danger btn-sm me-2 like-btn" data-list-id="{{ list.id }}"
+                    data-action="dislike">
+                    <i class="bi bi-hand-thumbs-down-fill"></i> <span class="dislike-count">{{ list.count_dislikes() }}</span>
+                </button>
+
+                <!-- 📌 Seguir Lista -->
+                <button class="btn btn-outline-primary btn-sm follow-btn" data-list-id="{{ list.id }}"
+                    data-action="following">
+                    <i class="bi {% if list in current_user.following_lists %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                </button>
+
+                <!-- 🔹 Ítems y Comentarios -->
+                <span class="ms-3 text-info">
+                    <i class="bi bi-list-ul"></i> {{ list.items|length }}
+                </span>
+                <span class="ms-3 text-warning">
+                    <i class="bi bi-chat-fill"></i> {{ list.count_comments() }}
+                </span>
+
             </div>
-        </div>
-    </div>
-    {% endfor %}
+        </li>
+        {% endfor %}
+    </ul>
     {% else %}
-    <p class="text-center text-muted">No hay listas públicas aún.</p>
+    <p class="text-center text-muted">No hay listas públicas aún. 🚀</p>
     {% endif %}
 </div>
 
-<!-- 🔥 Nueva Sección: Más Listas de la Comunidad -->
-{% if other_lists %}
-<div class="container mt-5">
-    <h2 class="text-center">🌍 Más Listas de la Comunidad</h2>
-    <p class="text-muted text-center">Explora más listas creadas por otros usuarios</p>
-
-    {% for list in other_lists %}
-    <div class="card shadow-sm mb-3">
-        <div class="card-body d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center">
-                <img src="{{ url_for('static', filename=list.image_url if list.image_url else 'default_thumbnail.png') }}"
-                    class="rounded-circle me-3" width="50" alt="Imagen de la lista">
-                <div>
-                    <h5 class="mb-0">
-                        <a href="{{ url_for('lists.view_list', list_id=list.id) }}" class="text-dark text-decoration-none">
-                            {{ list.name }}
-                        </a>
-                    </h5>
-                </div>
-            </div>
-
-            <!-- 🔹 Botonera -->
-            <div class="d-flex align-items-center text-muted">
-                <form action="{{ url_for('lists.like_list', list_id=list.id, action='like') }}" method="POST" class="d-inline">
-                    {{ form.hidden_tag() }}
-                    <button type="submit" class="btn btn-outline-success btn-sm me-2">
-                        <i class="bi bi-hand-thumbs-up-fill"></i> {{ list.count_likes() }}
-                    </button>
-                </form>
-
-                <form action="{{ url_for('lists.like_list', list_id=list.id, action='dislike') }}" method="POST" class="d-inline">
-                    {{ form.hidden_tag() }}
-                    <button type="submit" class="btn btn-outline-danger btn-sm me-2">
-                        <i class="bi bi-hand-thumbs-down-fill"></i> {{ list.count_dislikes() }}
-                    </button>
-                </form>
-
-                <form action="{{ url_for('following.toggle_follow', list_id=list.id) }}" method="POST" class="d-inline">
-                    {{ form.hidden_tag() }}
-                    <button type="submit" class="btn btn-outline-primary btn-sm">
-                        <i class="bi {% if list in current_user.following_lists %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
-
 {% endblock %}
-

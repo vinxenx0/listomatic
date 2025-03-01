@@ -92,3 +92,48 @@ body {
     padding: 4px 8px;
     font-size: 0.85rem;
 }
+
+
+
+/* ✅ Efecto Fade Out */
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+.fade-out {
+    animation: fadeOut 0.5s forwards;
+}
+
+
+
+/* ✅ Estilos para los mensajes flash */
+/* 🔥 Flash messages siempre visibles */
+.flash-messages {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999!important;  /* Asegurar que está por encima de todo */
+    width: 90%;
+    max-width: 600px;
+    text-align: center;
+}
+
+
+/* ✅ Diferentes colores según el tipo de mensaje */
+.flash-message.success { background-color: #28a745; color: #fff; }  /* Verde */
+.flash-message.danger { background-color: #dc3545; color: #fff; }  /* Rojo */
+.flash-message.warning { background-color: #ffc107; color: #333; } /* Amarillo */
+.flash-message.info { background-color: #17a2b8; color: #fff; }    /* Azul */
+
+/* ✅ Animaciones */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; transform: translateY(-10px); }
+}

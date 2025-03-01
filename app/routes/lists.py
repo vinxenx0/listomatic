@@ -13,6 +13,7 @@ from app.models.item import item_ratings
 from app.models.tag import Tag
 from app.forms.list_forms import ListForm
 from app.forms.list_forms import ItemForm
+from flask import jsonify, flash, get_flashed_messages
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
@@ -319,3 +320,48 @@ def lists_by_tag(tag_name):
     from app.models.tag import Tag
     tag = Tag.query.filter_by(name=tag_name).first_or_404()
     return render_template("lists/tag.html", lists=tag.lists, tag=tag)
+
+
+
+
+@lists_bp.route("/<int:list_id>/like/<string:action>", methods=["POST"])
+@login_required
+def like_list_ajax(list_id, action):
+    """Procesa el like/dislike y devuelve JSON con flash messages."""
+    list_obj = List.query.get_or_404(list_id)
+
+    if not list_obj.is_public:
+        flash("No puedes interactuar con una lista privada.", "danger")
+        return jsonify({"success": False, "messages": get_flashed_messages(with_categories=True)})
+
+    is_like = action == "like"
+
+    existing_like = db.session.query(likes_table).filter_by(user_id=current_user.id, list_id=list_id).first()
+
+    if existing_like:
+        if existing_like.is_like == is_like:
+            db.session.execute(likes_table.delete().where(
+                (likes_table.c.user_id == current_user.id) & (likes_table.c.list_id == list_id)))
+            db.session.commit()
+            flash("Tu voto ha sido eliminado", "info")
+        else:
+            db.session.execute(likes_table.update().where(
+                (likes_table.c.user_id == current_user.id) & (likes_table.c.list_id == list_id)).values(is_like=is_like))
+            db.session.commit()
+            flash("Tu voto ha sido actualizado", "success")
+    else:
+        db.session.execute(likes_table.insert().values(user_id=current_user.id, list_id=list_id, is_like=is_like))
+        db.session.commit()
+        flash("Tu voto ha sido registrado", "success")
+
+    # ✅ Notificación al dueño de la lista si no es el mismo usuario
+    if list_obj.owner.id != current_user.id:
+        action_text = "le ha dado like" if is_like else "le ha dado dislike"
+        list_obj.owner.add_notification("like", f"{current_user.username} {action_text} a tu lista '{list_obj.name}'.")
+
+    return jsonify({
+        "success": True,
+        "likes": list_obj.count_likes(),
+        "dislikes": list_obj.count_dislikes(),
+        "messages": get_flashed_messages(with_categories=True)  # ✅ Enviar mensajes flash en JSON
+    })

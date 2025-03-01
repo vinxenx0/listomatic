@@ -46,7 +46,7 @@ def home():
     excluded_ids = {l.id for l in trending_lists + latest_lists}
     other_lists = List.query.filter(List.is_public == True, ~List.id.in_(excluded_ids)).order_by(List.timestamp.desc()).all()
 
-    recent_activity = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).limit(5).all()
+    recent_activity = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).limit(100).all()
 
 
     public_lists = List.query.filter_by(is_public=True).order_by(List.timestamp.desc()).limit(10).all()

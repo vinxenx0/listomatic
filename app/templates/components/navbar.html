@@ -1,22 +1,27 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <a class="navbar-brand" href="{{ url_for('home.home') }}">📋 MyLists</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                {% if current_user.is_authenticated %}
+        <a class="navbar-brand fw-bold" href="{{ url_for('home.home') }}">
+            📋 MyLists
+        </a>
+        <div class="d-flex ms-auto align-items-center">
+            {% if current_user.is_authenticated %}
 
-                <li class="nav-item dropdown">
-                    <a class="nav-link position-relative" href="#" id="followingDropdown" role="button"
-                        data-bs-toggle="dropdown">
-                        🔖 Siguiendo
+                <!-- 🔍 Exploración -->
+                <a class="nav-link position-relative me-3" href="{{ url_for('lists.explore') }}" title="Explorar">
+                    <i class="bi bi-search fs-4"></i>
+                </a>
+
+                <!-- ❤️ Listas Seguidas -->
+                <div class="dropdown">
+                    <a class="nav-link position-relative dropdown-toggle" href="#" id="followingDropdown"
+                        role="button" data-bs-toggle="dropdown" title="Listas Seguidas">
+                        <i class="bi bi-heart fs-4"></i>
                         {% if current_user.unread_following_notifications_count() > 0 %}
-                        <span class="badge bg-danger">{{ current_user.unread_following_notifications_count() }}</span>
+                            <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">
+                                {{ current_user.unread_following_notifications_count() }}
+                            </span>
                         {% endif %}
                     </a>
-
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="followingDropdown">
                         {% for notification in current_user.get_following_notifications()[:5] %}
                         <li class="dropdown-item {% if not notification.is_read %}fw-bold{% endif %}">
@@ -27,25 +32,17 @@
                         <li><a class="dropdown-item text-center" href="{{ url_for('following.view_following') }}">Ver
                                 todas</a></li>
                     </ul>
-                </li>
+                </div>
 
-
-
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('lists.dashboard') }}">Mis Listas</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('users.profile') }}">Perfil</a>
-                </li>
-
-                <li class="nav-item dropdown">
-                    <a class="nav-link position-relative" href="#" id="notificationsDropdown" role="button"
-                        data-bs-toggle="dropdown">
-                        🔔
+                <!-- 🔔 Notificaciones -->
+                <div class="dropdown">
+                    <a class="nav-link position-relative dropdown-toggle" href="#" id="notificationsDropdown"
+                        role="button" data-bs-toggle="dropdown" title="Notificaciones">
+                        <i class="bi bi-bell fs-4"></i>
                         {% if current_user.unread_notifications_count() > 0 %}
-                        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">
-                            {{ current_user.unread_notifications_count() }}
-                        </span>
+                            <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">
+                                {{ current_user.unread_notifications_count() }}
+                            </span>
                         {% endif %}
                     </a>
 
@@ -59,50 +56,41 @@
                         <li><a class="dropdown-item text-center" href="{{ url_for('notifications.view_all') }}">Ver
                                 todas</a></li>
                     </ul>
-                </li>
+                </div>
 
+                <!-- 📋 Mis Listas -->
+                <a class="nav-link position-relative me-3" href="{{ url_for('lists.dashboard') }}" title="Mis Listas">
+                    <i class="bi bi-journal fs-4"></i>
+                </a>
 
-                {% if current_user.is_admin() %}
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle text-warning" href="#" id="adminDropdown" role="button"
-                        data-bs-toggle="dropdown">
-                        ⚙️ Admin
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{{ url_for('admin.admin_dashboard') }}">📊 Dashboard</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('admin.manage_categories') }}">📂 Categorías</a>
-                        </li>
-                        <li><a class="dropdown-item" href="{{ url_for('admin.manage_badges') }}">🏅 Badges</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('admin.edit_config') }}">⚙️ Configuración</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('admin.manage_users') }}">👤 Usuarios</a></li>
-                    </ul>
-                </li>
-                {% endif %}
+                <!-- 👤 Perfil -->
+                <a class="nav-link position-relative me-3" href="{{ url_for('users.profile') }}" title="Perfil">
+                    <i class="bi bi-person-circle fs-4"></i>
+                </a>
 
-                <li class="nav-item">
-                    <a class="nav-link text-danger" href="{{ url_for('auth.logout') }}">Salir</a>
-                </li>
+                <!-- 🌙 Modo Oscuro -->
+                <button class="btn btn-outline-light ms-3" onclick="toggleTheme()" title="Modo Oscuro/Claro">
+                    {% if current_user.theme == "light" %}
+                        <i class="bi bi-moon-stars"></i>
+                    {% else %}
+                        <i class="bi bi-sun"></i>
+                    {% endif %}
+                </button>
 
-                <!-- 🔥 BOTÓN PARA CAMBIAR TEMA -->
-                <li class="nav-item">
-                    <button class="btn btn-outline-light ms-3" onclick="toggleTheme()">
-                        {% if current_user.theme == "light" %}
-                        🌙 Modo Oscuro
-                        {% else %}
-                        ☀️ Modo Claro
-                        {% endif %}
-                    </button>
-                </li>
+                <!-- 🚪 Salir -->
+                <a class="nav-link text-danger ms-3" href="{{ url_for('auth.logout') }}" title="Salir">
+                    <i class="bi bi-box-arrow-right fs-4"></i>
+                </a>
 
-                {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('auth.login') }}">Iniciar sesión</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('auth.register') }}">Registrarse</a>
-                </li>
-                {% endif %}
-            </ul>
+            {% else %}
+                <!-- 🔑 Inicio de Sesión y Registro -->
+                <a class="nav-link text-light me-3" href="{{ url_for('auth.login') }}" title="Iniciar sesión">
+                    <i class="bi bi-key fs-4"></i>
+                </a>
+                <a class="nav-link text-light" href="{{ url_for('auth.register') }}" title="Registrarse">
+                    <i class="bi bi-person-plus fs-4"></i>
+                </a>
+            {% endif %}
         </div>
     </div>
 </nav>

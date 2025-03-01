@@ -11,7 +11,7 @@ class EmptyForm(FlaskForm):
 
 following_bp = Blueprint("following", __name__, url_prefix="/following")
 
-@following_bp.route("/toggle/<int:list_id>")
+@following_bp.route("/toggle/<int:list_id>", methods=["POST"]) 
 @login_required
 def toggle_follow(list_id):
     """Seguir o dejar de seguir una lista."""

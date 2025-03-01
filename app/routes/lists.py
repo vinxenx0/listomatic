@@ -41,6 +41,22 @@ def dashboard():
                            category_counts=category_counts)
 
 
+@lists_bp.route("/explore")
+@login_required
+def explore():
+    user_lists = List.query.filter_by(user_id=current_user.id).all()
+
+    category_counts = {category.name: 0 for category in Category.get_all()}
+    if current_user.is_authenticated:
+        for category_name, count in db.session.query(List.category, func.count(List.id)) \
+                .filter(List.user_id == current_user.id).group_by(List.category).all():
+            category_counts[category_name] = count
+
+    return render_template("lists/dashboard.html",
+                           lists=user_lists,
+                           category_counts=category_counts)
+
+
 @lists_bp.route("/create", methods=["GET", "POST"])
 @login_required
 def create_list():

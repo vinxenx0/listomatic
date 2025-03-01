@@ -11,3 +11,84 @@
     --bs-card-bg: #f8f9fa;
     --bs-card-border-color: #dee2e6;
 }
+
+
+html,
+body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.content {
+    flex: 1;
+}
+
+/* estilos iconos navbar */
+
+.navbar .bi-search {
+    color: #3498db;
+}
+
+/* Azul */
+.navbar .bi-heart {
+    color: #e74c3c;
+}
+
+/* Rojo */
+.navbar .bi-bell {
+    color: #f1c40f;
+}
+
+/* Amarillo */
+.navbar .bi-journal {
+    color: #2ecc71;
+}
+
+/* Verde */
+.navbar .bi-person-circle {
+    color: #9b59b6;
+}
+
+/* Morado */
+.navbar .bi-box-arrow-right {
+    color: #e67e22;
+}
+
+/* estilos iconos cards */
+/* Estilo para iconos en las cards */
+.card-body .bi {
+    transition: transform 0.2s ease-in-out;
+}
+
+/* Efecto hover en los iconos */
+.card-body a:hover .bi {
+    transform: scale(1.2);
+}
+
+/* Espaciado entre elementos */
+.card-footer {
+    padding: 0.5rem 1rem;
+}
+
+/* Alinear correctamente la botonera */
+.card-body .text-muted {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+}
+
+
+/* Alinear correctamente la botonera */
+.card-body .text-muted {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Reducir tamaño de botones */
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 0.85rem;
+}

@@ -1,0 +1,14 @@
+📌 1. Feed de Actividad en Tiempo Real
+
+¿Por qué? Los usuarios quieren saber qué está pasando en la comunidad.
+¿Cómo? Implementa un feed en la página principal que muestre acciones como:
+✔ Fulano ha creado una nueva lista
+✔ Mengano ha comentado en la lista de Zutano
+✔ Juan ha seguido la lista "Películas de Ciencia Ficción"
+Extra: Un filtro para ver solo las acciones de las listas que sigues.
+
+🔧 ¿Cómo hacerlo?
+
+    Crear un modelo ActivityFeed que registre eventos importantes.
+    Mostrar el feed en la página principal con las acciones recientes.
+    Implementar WebSockets para que las actualizaciones sean en tiempo real.

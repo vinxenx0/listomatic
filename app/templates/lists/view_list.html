@@ -11,8 +11,8 @@
         <a href="{{ url_for('lists.lists_by_category', category_id=list_obj.category.id) }}" class="badge bg-info">
             {{ list_obj.category.name }}
         </a>
-        
-            {% endif %}
+
+        {% endif %}
     </h2>
 
     <p class="text-muted">
@@ -21,8 +21,8 @@
         🔄 Última actualización: {{ list_obj.updated_at.strftime('%d/%m/%Y %H:%M') }}
     </p>
 
-    <img src="{{ url_for('static', filename=list_obj.image_url if list_obj.image_url else 'default_thumbnail.png') }}" 
-     class="img-fluid rounded mx-auto d-block" width="200" alt="Imagen de la lista">
+    <img src="{{ url_for('static', filename=list_obj.image_url if list_obj.image_url else 'default_thumbnail.png') }}"
+        class="img-fluid rounded mx-auto d-block" width="200" alt="Imagen de la lista">
 
 
     {% if list_obj.tags %}
@@ -57,14 +57,18 @@
     {% endif %}
 
     {% if current_user.is_authenticated and list_obj.user_id != current_user.id %}
-    <a href="{{ url_for('following.toggle_follow', list_id=list_obj.id) }}" class="btn btn-outline-primary">
-        {% if current_user.is_following(list_obj) %}
+    <form action="{{ url_for('following.toggle_follow', list_id=list_obj.id) }}" method="POST" class="d-inline">
+        {{ form.hidden_tag() }}  
+        <button type="submit" class="btn btn-outline-primary">
+            {% if current_user.is_following(list_obj) %}
             🔖 Siguiendo
-        {% else %}
+            {% else %}
             📌 Seguir
-        {% endif %}
-    </a>
-{% endif %}
+            {% endif %}
+        </button>
+    </form>
+    {% endif %}
+
 
     <h4 class="mt-4">Ítems en la lista</h4>
     {% if list_obj.items %}

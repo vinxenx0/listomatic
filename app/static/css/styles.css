@@ -183,3 +183,9 @@ body {
 .bubble-animation {
     animation: fadeOutBack 0.8s ease forwards;
 }
+
+
+/* 🔥 Ocultar la flecha del dropdown */
+.no-caret::after {
+    display: none !important;
+}

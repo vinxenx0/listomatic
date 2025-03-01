@@ -13,7 +13,8 @@
 
                 <!-- ❤️ Listas Seguidas -->
                 <div class="dropdown position-relative me-2">
-                    <a class="nav-link dropdown-toggle" href="#" id="followingDropdown" role="button" data-bs-toggle="dropdown" title="Listas Seguidas">
+                    <a class="nav-link dropdown-toggle no-caret" href="#" id="followingDropdown"
+                        role="button" data-bs-toggle="dropdown" title="Listas Seguidas">
                         <i class="bi bi-heart fs-5"></i>
                     </a>
                     {% if current_user.unread_following_notifications_count() > 0 %}
@@ -34,7 +35,8 @@
 
                 <!-- 🔔 Notificaciones -->
                 <div class="dropdown position-relative me-2">
-                    <a class="nav-link dropdown-toggle" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown" title="Notificaciones">
+                    <a class="nav-link dropdown-toggle no-caret" href="#" id="notificationsDropdown"
+                        role="button" data-bs-toggle="dropdown" title="Notificaciones">
                         <i class="bi bi-bell fs-5"></i>
                     </a>
                     {% if current_user.unread_notifications_count() > 0 %}
@@ -63,14 +65,14 @@
                     <i class="bi bi-person-circle fs-5"></i>
                 </a>
 
-                <!-- 🌙 Modo Oscuro
+                <!-- 🌙 Modo Oscuro 
                 <button class="btn btn-outline-light btn-sm ms-2" onclick="toggleTheme()" title="Modo Oscuro/Claro">
                     {% if current_user.theme == "light" %}
                         <i class="bi bi-moon-stars"></i>
                     {% else %}
                         <i class="bi bi-sun"></i>
                     {% endif %}
-                </button>  -->
+                </button> -->
 
                 <!-- 🚪 Salir -->
                 <a class="nav-link text-danger ms-2" href="{{ url_for('auth.logout') }}" title="Salir">

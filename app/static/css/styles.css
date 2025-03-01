@@ -161,3 +161,25 @@ body {
     from { opacity: 1; }
     to { opacity: 0; transform: translateY(-10px); }
 }
+
+
+
+@keyframes fadeOutBack {
+    0% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    50% {
+        transform: translateX(-15px);
+        opacity: 0.8;
+    }
+    100% {
+        transform: translateX(-30px);
+        opacity: 0;
+    }
+}
+
+/* Aplicamos la animación a las burbujas de notificación */
+.bubble-animation {
+    animation: fadeOutBack 0.8s ease forwards;
+}

@@ -93,36 +93,50 @@ def view_following_notifications():
     return render_template("following/notifications.html", notifications=notifications)
 
 
-
 @following_bp.route("/toggle_ajax/<int:list_id>", methods=["POST"])
-@login_required
 def toggle_follow_ajax(list_id):
     """Seguir o dejar de seguir una lista y devolver JSON con el nuevo estado."""
     list_obj = List.query.get_or_404(list_id)
 
+    # ✅ Si el usuario no está autenticado, devolvemos JSON con mensaje de error
+    if not current_user.is_authenticated:
+        return jsonify({"error": "auth_required", "messages": [["warning", "⚠️ Debes iniciar sesión para seguir listas."]]}), 401
+
+    # ✅ Evitar que los usuarios sigan su propia lista
     if list_obj.user_id == current_user.id:
         flash("No puedes seguir tu propia lista.", "warning")
-        return jsonify({"success": False, "messages": get_flashed_messages(with_categories=True)})
+        return jsonify({"success": False, "messages": get_flashed_messages(with_categories=True)}), 400
 
     following = list_obj in current_user.following_lists
 
+    # ✅ Crear variable para mensaje flash ANTES de commit
     if following:
         current_user.unfollow_list(list_obj)
         action_text = "❌ dejaste de seguir"
-        flash("Has dejado de seguir la lista.", "info")
+        flash_message = ["info", "Has dejado de seguir la lista."]
     else:
         current_user.follow_list(list_obj)
         action_text = "❤️ comenzaste a seguir"
-        flash("Ahora sigues esta lista.", "success")
+        flash_message = ["success", "Ahora sigues esta lista."]
 
-    # ✅ Guardar en el log de actividad
+    # ✅ Guardamos primero en la base de datos
+    db.session.commit()
+
+    # ✅ Guardar en el log de actividad después del commit
     log = ActivityLog(user_id=current_user.id, list_id=list_id, action="follow",
                       message=f"{action_text} la lista '{list_obj.name}'.")
     db.session.add(log)
     db.session.commit()
 
+    # ✅ Recoger mensajes flash incluyendo el que acabamos de añadir
+    messages = get_flashed_messages(with_categories=True)
+    
+    # ✅ Evitar que se pierdan los mensajes flash
+    if not messages:
+        messages = [flash_message]
+
     return jsonify({
         "success": True,
         "following": not following,  # 🔥 Devolvemos el estado actualizado
-        "messages": get_flashed_messages(with_categories=True)
+        "messages": messages  # 🔥 Ahora sí devuelve los mensajes correctamente
     })

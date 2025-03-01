@@ -43,21 +43,6 @@ def dashboard():
                            category_counts=category_counts)
 
 
-@lists_bp.route("/explore")
-@login_required
-def explore():
-    user_lists = List.query.filter_by(user_id=current_user.id).all()
-
-    category_counts = {category.name: 0 for category in Category.get_all()}
-    if current_user.is_authenticated:
-        for category_name, count in db.session.query(List.category, func.count(List.id)) \
-                .filter(List.user_id == current_user.id).group_by(List.category).all():
-            category_counts[category_name] = count
-
-    return render_template("lists/dashboard.html",
-                           lists=user_lists,
-                           category_counts=category_counts)
-
 
 @lists_bp.route("/create", methods=["GET", "POST"])
 @login_required
@@ -324,18 +309,20 @@ def lists_by_tag(tag_name):
 
 
 
-@lists_bp.route("/<int:list_id>/like/<string:action>", methods=["POST"])
-@login_required
+@lists_bp.route("/<int:list_id>/like_ajax/<string:action>", methods=["POST"])
 def like_list_ajax(list_id, action):
-    """Procesa el like/dislike y devuelve JSON con flash messages."""
+    """✅ Procesa el like/dislike y devuelve JSON con flash messages."""
     list_obj = List.query.get_or_404(list_id)
+    
+
+    # 🔥 Si el usuario no está autenticado, devolver JSON en lugar de redirigir
+    if not current_user.is_authenticated:
+        return jsonify({"error": "auth_required", "messages": [["warning", "Debes iniciar sesión para votar."]]}), 401
 
     if not list_obj.is_public:
-        flash("No puedes interactuar con una lista privada.", "danger")
-        return jsonify({"success": False, "messages": get_flashed_messages(with_categories=True)})
+        return jsonify({"success": False, "messages": [["danger", "No puedes interactuar con una lista privada."]]}), 403
 
     is_like = action == "like"
-
     existing_like = db.session.query(likes_table).filter_by(user_id=current_user.id, list_id=list_id).first()
 
     if existing_like:
@@ -363,5 +350,5 @@ def like_list_ajax(list_id, action):
         "success": True,
         "likes": list_obj.count_likes(),
         "dislikes": list_obj.count_dislikes(),
-        "messages": get_flashed_messages(with_categories=True)  # ✅ Enviar mensajes flash en JSON
+        "messages": get_flashed_messages(with_categories=True)
     })

@@ -104,8 +104,8 @@ def toggle_follow_ajax(list_id):
 
     # ✅ Evitar que los usuarios sigan su propia lista
     if list_obj.user_id == current_user.id:
-        flash("No puedes seguir tu propia lista.", "warning")
-        return jsonify({"success": False, "messages": get_flashed_messages(with_categories=True)}), 400
+        messages = [["warning", "No puedes seguir tu propia lista."]]  # ✅ Definimos el mensaje directamente
+        return jsonify({"success": False, "messages": messages}), 400
 
     following = list_obj in current_user.following_lists
 
@@ -119,7 +119,7 @@ def toggle_follow_ajax(list_id):
         action_text = "❤️ comenzaste a seguir"
         flash_message = ["success", "Ahora sigues esta lista."]
 
-    # ✅ Guardamos primero en la base de datos
+    # ✅ Guardamos en la base de datos
     db.session.commit()
 
     # ✅ Guardar en el log de actividad después del commit
@@ -128,15 +128,10 @@ def toggle_follow_ajax(list_id):
     db.session.add(log)
     db.session.commit()
 
-    # ✅ Recoger mensajes flash incluyendo el que acabamos de añadir
-    messages = get_flashed_messages(with_categories=True)
-    
-    # ✅ Evitar que se pierdan los mensajes flash
-    if not messages:
-        messages = [flash_message]
-
+    # ✅ Devolvemos solo el mensaje flash correcto (sin duplicaciones)
     return jsonify({
         "success": True,
         "following": not following,  # 🔥 Devolvemos el estado actualizado
-        "messages": messages  # 🔥 Ahora sí devuelve los mensajes correctamente
+        "messages": [flash_message]  # 🔥 Solo un mensaje sin duplicados
     })
+

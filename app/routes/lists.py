@@ -322,10 +322,12 @@ def like_list_ajax(list_id, action):
     list_obj = List.query.get_or_404(list_id)
 
     if not current_user.is_authenticated:
-        return jsonify({"error": "auth_required", "messages": [["warning", "Debes iniciar sesión para votar."]]}), 401
+        flash("Debes iniciar sesión para votar.", "warning")
+        return jsonify({"error": "auth_required", "messages": get_flashed_messages(with_categories=True)}), 401
 
     if not list_obj.is_public:
-        return jsonify({"success": False, "messages": [["danger", "No puedes interactuar con una lista privada."]]}), 403
+        flash("No puedes interactuar con una lista privada.", "danger")
+        return jsonify({"success": False, "messages": get_flashed_messages(with_categories=True)}), 403
 
     is_like = action == "like"
     existing_vote = db.session.query(likes_table).filter_by(user_id=current_user.id, list_id=list_id).first()
@@ -334,6 +336,7 @@ def like_list_ajax(list_id, action):
     like_status = None
     message = None
     log_message = None  # Evita registros duplicados en ActivityLog
+    notify_owner = False
 
     if existing_vote:
         if existing_vote.is_like == is_like:
@@ -341,32 +344,28 @@ def like_list_ajax(list_id, action):
             db.session.execute(likes_table.delete().where(
                 (likes_table.c.user_id == current_user.id) & (likes_table.c.list_id == list_id)))
             message = "Tu voto ha sido eliminado"
-            log_message = None  # No registrar en el timeline
-            like_status = None  # Sin voto activo
+            like_status = "removed"
         else:
             # 🔥 Cambio de voto (de like a dislike o viceversa)
             db.session.execute(likes_table.update().where(
                 (likes_table.c.user_id == current_user.id) & (likes_table.c.list_id == list_id)).values(is_like=is_like))
-            message = "Tu voto ha sido actualizado"
+            message = f"Tu voto ha sido cambiado a {'👍 like' if is_like else '👎 dislike'}"
             log_message = f"{current_user.username} ha cambiado su voto a {'👍 like' if is_like else '👎 dislike'} en la lista '{list_obj.name}'."
             like_status = "updated"
+            notify_owner = True
     else:
         # 🔥 Nuevo voto
         db.session.execute(likes_table.insert().values(user_id=current_user.id, list_id=list_id, is_like=is_like))
-        message = "Tu voto ha sido registrado"
+        message = f"Tu voto ha sido registrado como {'👍 like' if is_like else '👎 dislike'}"
         log_message = f"{current_user.username} ha dado {'👍 like' if is_like else '👎 dislike'} a la lista '{list_obj.name}'."
         like_status = "new"
+        notify_owner = True
 
-    # ✅ Ejecutamos **solo un commit** para mejorar eficiencia
+    # ✅ Guardar cambios en la base de datos
     db.session.commit()
 
-    # ✅ Mensaje flash único
+    # ✅ Mensaje flash ✅
     flash(message, "success")
-
-    # ✅ Notificación al dueño de la lista si es un voto nuevo y no es el mismo usuario
-    if like_status and list_obj.owner.id != current_user.id:
-        action_text = "le ha dado 👍 like" if is_like else "le ha dado 👎 dislike"
-        list_obj.owner.add_notification("like", f"{current_user.username} {action_text} a tu lista '{list_obj.name}'.")
 
     # ✅ REGISTRAR EN TIMELINE (ActivityLog) SOLO SI HAY UN CAMBIO REAL
     if log_message:
@@ -377,11 +376,17 @@ def like_list_ajax(list_id, action):
             message=log_message
         )
         db.session.add(log_entry)
-        db.session.commit()
+
+    # ✅ Notificación al dueño de la lista solo si es un voto nuevo/cambiado y no es el mismo usuario
+    if notify_owner and list_obj.owner.id != current_user.id:
+        action_text = "le ha dado 👍 like" if is_like else "le ha dado 👎 dislike"
+        list_obj.owner.add_notification("like", f"{current_user.username} {action_text} a tu lista '{list_obj.name}'.")
+
+    db.session.commit()  # ✅ Segundo commit solo si hubo notificación o registro en ActivityLog
 
     return jsonify({
         "success": True,
         "likes": list_obj.count_likes(),
         "dislikes": list_obj.count_dislikes(),
-        "messages": get_flashed_messages(with_categories=True)
+        "messages": get_flashed_messages(with_categories=True)  # ✅ Flash messages restaurados aquí
     })

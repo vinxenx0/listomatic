@@ -46,13 +46,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // ✅ Función para mostrar mensajes flash dinámicamente
 function showFlashMessages(messages) {
-    const container = document.getElementById("flash-messages");
+    let container = document.getElementById("flash-messages");
+
+    // 🔥 Si el contenedor no existe, lo creamos y lo añadimos al body
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "flash-messages";
+        container.className = "flash-messages";
+        document.body.appendChild(container);
+    }
+
+    // 🔥 Limpiar mensajes anteriores
     container.innerHTML = "";
 
     messages.forEach(([category, message]) => {
         let alert = document.createElement("div");
-        alert.className = `alert alert-${category} alert-dismissible fade show shadow-lg`;
-        alert.innerHTML = message;
+        alert.className = `alert alert-${category} alert-dismissible fade show shadow-lg flash-message`;
+        alert.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
         container.appendChild(alert);
 
         // 🔥 Desvanecer después de 3 segundos

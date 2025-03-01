@@ -3,73 +3,68 @@
         <a class="navbar-brand fw-bold" href="{{ url_for('home.home') }}">
             📋 MyLists
         </a>
-        <div class="d-flex ms-auto align-items-center">
+        <div class="d-flex ms-auto align-items-center flex-wrap justify-content-between">
             {% if current_user.is_authenticated %}
 
                 <!-- 🔍 Exploración -->
-                <a class="nav-link position-relative me-3" href="{{ url_for('home.explore') }}" title="Explorar">
-                    <i class="bi bi-search fs-4"></i>
+                <a class="nav-link position-relative me-2" href="{{ url_for('home.explore') }}" title="Explorar">
+                    <i class="bi bi-search fs-5"></i>
                 </a>
 
-<!-- ❤️ Listas Seguidas -->
-<div class="dropdown position-relative">
-    {% if current_user.unread_following_notifications_count() > 0 %}
-        <span class="badge bg-danger position-absolute top-40 start-0 translate-middle-y">
-            {{ current_user.unread_following_notifications_count() }}
-        </span>
-    {% endif %}
-    <a class="nav-link dropdown-toggle" href="#" id="followingDropdown"
-        role="button" data-bs-toggle="dropdown" title="Listas Seguidas">
-        <i class="bi bi-heart fs-4"></i>
-    </a>
-    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="followingDropdown">
-        {% for notification in current_user.get_following_notifications()[:5] %}
-        <li class="dropdown-item {% if not notification.is_read %}fw-bold{% endif %}">
-            {{ notification.message }} <br>
-            <small class="text-muted">{{ notification.timestamp.strftime('%d/%m/%Y %H:%M') }}</small>
-        </li>
-        {% endfor %}
-        <li><a class="dropdown-item text-center" href="{{ url_for('following.view_following') }}">Ver todas</a></li>
-    </ul>
-</div>
+                <!-- ❤️ Listas Seguidas -->
+                <div class="dropdown position-relative me-2">
+                    <a class="nav-link dropdown-toggle" href="#" id="followingDropdown" role="button" data-bs-toggle="dropdown" title="Listas Seguidas">
+                        <i class="bi bi-heart fs-5"></i>
+                    </a>
+                    {% if current_user.unread_following_notifications_count() > 0 %}
+                        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">
+                            {{ current_user.unread_following_notifications_count() }}
+                        </span>
+                    {% endif %}
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="followingDropdown">
+                        {% for notification in current_user.get_following_notifications()[:5] %}
+                        <li class="dropdown-item {% if not notification.is_read %}fw-bold{% endif %}">
+                            {{ notification.message }} <br>
+                            <small class="text-muted">{{ notification.timestamp.strftime('%d/%m/%Y %H:%M') }}</small>
+                        </li>
+                        {% endfor %}
+                        <li><a class="dropdown-item text-center" href="{{ url_for('following.view_following') }}">Ver todas</a></li>
+                    </ul>
+                </div>
 
-
-<!-- 🔔 Notificaciones -->
-<div class="dropdown position-relative">
-    {% if current_user.unread_notifications_count() > 0 %}
-        <span class="badge bg-danger position-absolute top-40 start-0 translate-middle-y">
-            {{ current_user.unread_notifications_count() }}
-        </span>
-    {% endif %}
-    <a class="nav-link dropdown-toggle" href="#" id="notificationsDropdown"
-        role="button" data-bs-toggle="dropdown" title="Notificaciones">
-        <i class="bi bi-bell fs-4"></i>
-    </a>
-
-    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown">
-        {% for notification in current_user.get_notifications()[:5] %}
-        <li class="dropdown-item {% if not notification.is_read %}fw-bold{% endif %}">
-            {{ notification.message }} <br>
-            <small class="text-muted">{{ notification.timestamp.strftime('%d/%m/%Y %H:%M') }}</small>
-        </li>
-        {% endfor %}
-        <li><a class="dropdown-item text-center" href="{{ url_for('notifications.view_all') }}">Ver todas</a></li>
-    </ul>
-</div>
-
+                <!-- 🔔 Notificaciones -->
+                <div class="dropdown position-relative me-2">
+                    <a class="nav-link dropdown-toggle" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown" title="Notificaciones">
+                        <i class="bi bi-bell fs-5"></i>
+                    </a>
+                    {% if current_user.unread_notifications_count() > 0 %}
+                        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">
+                            {{ current_user.unread_notifications_count() }}
+                        </span>
+                    {% endif %}
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown">
+                        {% for notification in current_user.get_notifications()[:5] %}
+                        <li class="dropdown-item {% if not notification.is_read %}fw-bold{% endif %}">
+                            {{ notification.message }} <br>
+                            <small class="text-muted">{{ notification.timestamp.strftime('%d/%m/%Y %H:%M') }}</small>
+                        </li>
+                        {% endfor %}
+                        <li><a class="dropdown-item text-center" href="{{ url_for('notifications.view_all') }}">Ver todas</a></li>
+                    </ul>
+                </div>
 
                 <!-- 📋 Mis Listas -->
-                <a class="nav-link position-relative me-3" href="{{ url_for('lists.dashboard') }}" title="Mis Listas">
-                    <i class="bi bi-journal fs-4"></i>
+                <a class="nav-link position-relative me-2" href="{{ url_for('lists.dashboard') }}" title="Mis Listas">
+                    <i class="bi bi-journal fs-5"></i>
                 </a>
 
                 <!-- 👤 Perfil -->
-                <a class="nav-link position-relative me-3" href="{{ url_for('users.profile') }}" title="Perfil">
-                    <i class="bi bi-person-circle fs-4"></i>
+                <a class="nav-link position-relative me-2" href="{{ url_for('users.profile') }}" title="Perfil">
+                    <i class="bi bi-person-circle fs-5"></i>
                 </a>
 
                 <!-- 🌙 Modo Oscuro -->
-                <button class="btn btn-outline-light ms-3" onclick="toggleTheme()" title="Modo Oscuro/Claro">
+                <button class="btn btn-outline-light btn-sm ms-2" onclick="toggleTheme()" title="Modo Oscuro/Claro">
                     {% if current_user.theme == "light" %}
                         <i class="bi bi-moon-stars"></i>
                     {% else %}
@@ -78,17 +73,17 @@
                 </button>
 
                 <!-- 🚪 Salir -->
-                <a class="nav-link text-danger ms-3" href="{{ url_for('auth.logout') }}" title="Salir">
-                    <i class="bi bi-box-arrow-right fs-4"></i>
+                <a class="nav-link text-danger ms-2" href="{{ url_for('auth.logout') }}" title="Salir">
+                    <i class="bi bi-box-arrow-right fs-5"></i>
                 </a>
 
             {% else %}
                 <!-- 🔑 Inicio de Sesión y Registro -->
-                <a class="nav-link text-light me-3" href="{{ url_for('auth.login') }}" title="Iniciar sesión">
-                    <i class="bi bi-key fs-4"></i>
+                <a class="nav-link text-light me-2" href="{{ url_for('auth.login') }}" title="Iniciar sesión">
+                    <i class="bi bi-key fs-5"></i>
                 </a>
                 <a class="nav-link text-light" href="{{ url_for('auth.register') }}" title="Registrarse">
-                    <i class="bi bi-person-plus fs-4"></i>
+                    <i class="bi bi-person-plus fs-5"></i>
                 </a>
             {% endif %}
         </div>
